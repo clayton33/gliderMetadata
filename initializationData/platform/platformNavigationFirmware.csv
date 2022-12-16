@@ -1,0 +1,14 @@
+platformNavigationFirmware,platformNavigationFirmwareNotes
+v2.1.5-r,
+v2.3.0-r,surfacing rate can be greater than 5
+v2.3.1-r,
+v2.5.0-r,implemented magnetic declination
+v2.6.0-r,heading
+v2.6.1-r,
+v2.7.1-r,payload communications
+v2.8.1-r,introducted dead reckoning
+v3.0.0-cr,auto pitch
+v3.2.0-r,
+v3.2.1-r,altimeter fix
+v3.2.2-r,
+v3.4.0-r,auto ballast and DR
