@@ -3,6 +3,9 @@ import pandas as pd
 from gliderMetadataApp import models
 
 
+#reInitializeAll = True
+
+
 def initiate_PlatformCompany():
     #  initialize PlatformCompany
     file = io.FileIO(file=r".\initializationData\platform\platformCompany.csv", mode="r")
@@ -30,7 +33,7 @@ def initiate_PlatformNavigationFirmware():
     df = pd.read_csv(file)
     for row in df.itertuples():
         pnf = models.PlatformNavigationFirmware(platform_navFirmwareVersion=getattr(row, "platformNavigationFirmware"),
-                                                platform_navFirmwareVersionNotes=getattr(row, "platformNavigationFirmwareNotes"))
+                                                platform_navFirmwareComments=getattr(row, "platformNavigationFirmwareNotes"))
         pnf.save()
 
 
@@ -47,8 +50,8 @@ def initiate_PlatformPayloadFirmware():
     file = io.FileIO(file=r".\initializationData\platform\platformPayloadFirmware.csv", mode="r")
     df = pd.read_csv(file)
     for row in df.itertuples():
-        ppf = models.PlatformPayloadFirmware(platform_payloadFirmwareVersion=getattr(row, "platformPayloadFirmwareVersion"),
-                                             platform_payloadFirmwareVersionNotes=getattr(row, "platformPayloadFirmwareVersionNotes"))
+        ppf = models.PlatformPayloadFirmware(platform_payloadFirmwareVersion=getattr(row, "platformPayloadFirmware"),
+                                             platform_payloadFirmwareVersionComments=getattr(row, "platformPayloadFirmwareComments"))
         ppf.save()
 
 
@@ -65,10 +68,18 @@ def initiate_PlatformRelease():
     file = io.FileIO(file=r".\initializationData\platform\platformRelease.csv", mode="r")
     df = pd.read_csv(file)
     for row in df.itertuples():
-        pr = models.PlatformRelease(platform_releaseType=getattr(row, "platform_releaseType"),
+        pr = models.PlatformRelease(platform_releaseType=getattr(row, "platformReleaseType"),
                                     platform_releaseAttachMethod=getattr(row, "platformReleaseAttachMethod"))
         pr.save()
 
 
-
-
+# commented out calls to functions indicates that the tables were initialized
+# note that if the database has to be re-initialized, some care should be taken
+# for the primary key call (see comments next to applicable functions)
+# initiate_PlatformCompany()
+# initiate_PlatformName() # primary key call
+# initiate_PlatformNavigationFirmware()
+# initiate_PlatformPayload() # primary key call to Platform
+# initiate_PlatformPayloadFirmware()
+# initiate_PlatformBattery()
+# initiate_PlatformRelease()

@@ -1,0 +1,47 @@
+instrumentSerialNumber_id,instrument_calibrationDate,instrument_calibrationReport,instrument_calibrationReportNotes,instrument_calibrationDateNotes
+1,"""2016-05-07""","""SEA019_CTD_DO_calib_files_SN0186_2016.pdf""",mergedFile,conductivity and temperature document
+1,"""2018-12-05""","""SEA019_CTD_DO_calib_files_SN0186_2018""",directory,conductivity and temperature document
+1,"""2019-07-26""","""SEA019_CTD_DO_calib_files_SN0186_2019""",directory,conductivity and temperature document
+1,"""2020-11-20""","""SEA019_CTD_DO_calib_files_SN0186_2020""",directory,conductivity and temperature document
+1,"""2022-04-19""","""SEA019_CTD_DO_calib_files_SN0186_2022""",directory,conductivity and temperature document
+2,"""2016-04-21""","""SEA019_CTD_DO_calib_files_SN0186_2016.pdf""",mergedFile,oxygen sensor page
+2,"""2018-12-19""","""SEA019_CTD_DO_calib_files_SN0186_2018""",directory,file name (not SOCAdjusted)
+2,"""2019-07-25""","""SEA019_CTD_DO_calib_files_SN0186_2019""",directory,file name (not SOCAdjusted)
+2,"""2021-02-08""","""SEA019_CTD_DO_calib_files_SN0186_2020""",directory,file name (not SOCAdjusted)
+2,"""2022-04-27""","""SEA019_CTD_DO_calib_files_SN0186_2022""",directory,file name (not SOCAdjusted)
+3,"""2016-11-17""","""SEA019_FLBBCD_calib_files_SN4551.pdf""",singleFile,SLC testing certification page
+4,"""2020-07-29""","""SEA019_LEGATO_calib_files_SN205045_2020.pdf""",singleFile,conductivity cell page
+5,"""2016-05-01""","""SEA021_CTD_DO_calib_files_SN0184_2016.pdf""",mergedFile,conductivity and temperature document
+5,"""2018-07-29""","""SEA021_CTD_DO_calib_files_SN0184_2018""",directory,conductivity and temperature document
+5,"""2020-01-02""","""SEA021_CTD_DO_calib_files_SN0184_2020""",directory,conductivity and temperature document
+5,"""2022-02-11""","""SEA021_CTD_DO_calib_files_SN0184_2022""",directory,conductivity and temperature document
+6,"""2016-04-22""","""SEA021_CTD_DO_calib_files_SN0184_2016.pdf""",mergedFile,oxygen sensor page
+6,"""2018-08-20""","""SEA021_CTD_DO_calib_files_SN0184_2018""",directory,file name (not SOCAdjusted)
+6,"""2019-12-30""","""SEA021_CTD_DO_calib_files_SN0184_2020""",directory,file name (not SOCAdjusted)
+6,"""2022-02-21""","""SEA021_CTD_DO_calib_files_SN0184_2022""",directory,file name (not SOCAdjusted)
+7,"""2016-12-07""","""SEA021_FLBBCD_calib_files_SN4548.pdf""",singleFile,SLC testing certification page
+8,"""2016-03-09""","""SEA022_CTD_DO_calib_files_SN0175_2016.pdf""",mergedFile,conductivity and temperature document
+8,"""2019-03-31""","""SEA022_CTD_DO_calib_files_SN0175_2019""",directory,conductivity and temperature document
+8,"""2021-01-14""","""SEA022_CTD_DO_calib_files_SN0175_2021_neverUsed""",directory,conductivity and temperature document
+8,"""2022-02-21""","""SEA022_CTD_DO_calib_files_SN0175_2022""",directory,conductivity and temperature document
+9,"""2016-01-30""","""SEA022_CTD_DO_calib_files_SN0175_2016.pdf""",mergedFile,oxygen sensor page
+9,"""2019-03-12""","""SEA022_CTD_DO_calib_files_SN0175_2019""",directory,file name (not SOCAdjusted)
+9,"""2021-02-24""","""SEA022_CTD_DO_calib_files_SN0175_2021_neverUsed""",directory,file name (not SOCAdjusted)
+9,"""2022-12-21""","""SEA022_CTD_DO_calib_files_SN0175_2022""",directory,file name (not SOCAdjusted)
+10,"""2016-12-19""","""SEA022_FLBBCD_calib_files_SN4546.pdf""",singleFile,SLC testing certification page
+11,"""2016-05-16""","""SEA024_CTD_DO_calib_files_SN0188_2016.pdf""",mergedFile,conductivity and temperature document
+11,"""2018-07-23""","""SEA024_CTD_DO_calib_files_SN0188_2018""",directory,conductivity and temperature document
+11,"""2019-07-30""","""SEA024_CTD_DO_calib_files_SN0188_2019""",directory,conductivity and temperature document
+11,"""2021-12-30""","""SEA024_CTD_DO_calib_files_SN0188_2021""",directory,conductivity and temperature document
+12,"""2016-04-20""","""SEA024_CTD_DO_calib_files_SN0188_2016.pdf""",mergedFile,file name (not SOCAdjusted)
+12,"""2018-08-14""","""SEA024_CTD_DO_calib_files_SN0188_2018""",directory,file name (not SOCAdjusted)
+12,"""2019-07-30""","""SEA024_CTD_DO_calib_files_SN0188_2019""",directory,file name (not SOCAdjusted)
+12,"""2021-01-05""","""SEA024_CTD_DO_calib_files_SN0188_2021""",directory,file name (not SOCAdjusted)
+13,"""2016-12-07""","""SEA024_FLBBCD_calib_files_SN4550.pdf""",singleFile,SLC testing certification page
+14,"""2017-10-20""","""SEA032_CTD_calib_files_SN0241_2017.pdf""",mergedFile,conductivity and temperature document
+14,"""2020-01-02""","""SEA032_CTD_calib_files_SN0241_2020""",directory,conductivity and temperature document
+14,"""2022-01-13""","""SEA032_CTD_calib_files_SN0241_2022""",directory,conductivity and temperature document
+16,"""2017-11-03""","""SEA032_RINKO_calib_files_SN0020_2017.pdf""",singleFile,oxygen sensor page
+16,"""2020-01-22""","""SEA032_RINKO_calib_files_SN0020_2020.pdf""",singleFile,oxygen sensor page
+17,"""2020-06-15""","""SEA032_MFLUV1_calib_files_2020.pdf""",singleFile,"main page, conflicts with GliderMissions.xlxs"
+15,"""2017-05-04""","""SEA032_FLBBCD_calib_files_SN4739.pdf""",singleFile,SLC testing certification page
