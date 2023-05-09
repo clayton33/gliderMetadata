@@ -1,7 +1,6 @@
 import io
 import operator
 
-import numpy as np
 import pandas as pd
 import re
 from gliderMetadataApp import models
@@ -32,15 +31,18 @@ def readMissionFile():
     dataframe.columns = dataframe.columns.str.replace(r'(', '', regex=True)
     # ')'
     dataframe.columns = dataframe.columns.str.replace(r')', '', regex=True)
-
     # Clean up and remove unnecessary rows
     # 1. Remove rows where 'annualMissionIndex' is NaN
     dataframe = dataframe.dropna(subset=['annualMissionIndex'])
-
     # Covert dates to something useful
     dataframe['Deploymentdate'] = convert_date(dataframe['Deploymentdate'])
     dataframe['Recoverydate'] = convert_date(dataframe['Recoverydate'])
-
+    dataframe['GPCTDcaldate'] = convert_date(dataframe['GPCTDcaldate'])
+    dataframe['GPCTDDOcaldate'] = convert_date(dataframe['GPCTDDOcaldate'])
+    dataframe['Rinkocaldate'] = convert_date(dataframe['Rinkocaldate'])
+    # dataframe['Ecopuckcaldate'] = convert_date(dataframe['Ecopuckcaldate']) # already in format
+    dataframe['LEGATOcaldate'] = convert_date(dataframe['LEGATOcaldate'])
+    dataframe['Minifluocaldate'] = convert_date(dataframe['Minifluocaldate'])
     return dataframe
 
 
@@ -61,6 +63,8 @@ for i in gliderSerial:
         platformNamePk.append(None)
     else:
         platformNamePk.append(platformNameQ.pk)
+# add platformNamePk to df
+df['platformNamePk'] = platformNamePk
 
 # mission_platformNavFirmware
 # remove leading spaces
@@ -81,6 +85,9 @@ for i in gliderNavFirm:
     else:
         platformNavFirmPk.append(platformNavFirmQ.pk)
 
+# add platformNavFirmPk to df
+df['platformNavigationFirmwarePk'] = platformNavFirmPk
+
 # mission_platformBattery
 gliderBattery = df['Battery']
 gliderBattery = [re.sub('(\\d+)\\w+ gen', '\\1', x) for x in gliderBattery]
@@ -94,6 +101,9 @@ for i in gliderBattery:
     else:
         platformBatteryPk.append(platformBatteryQ.pk)
 
+# add plotformBatteryPk to df
+df['platformBatteryPk'] = platformBatteryPk
+
 # mission_platformRelease
 gliderRelease = df['Release']
 gliderRelease = gliderRelease.tolist()
@@ -103,7 +113,8 @@ gliderRelease = [x.split(', ') for x in gliderRelease]
 gliderReleaseType = [x[0] for x in gliderRelease]
 gliderReleaseType = [x.replace('Mag', 'Magnetic') for x in gliderReleaseType]
 gliderReleaseType = [x.replace('wire', 'Wire') for x in gliderReleaseType]
-gliderReleaseAttach = [x[1] if x.__len__() > 1 else 'NULL' for x in gliderRelease] # might have to replace 'NULL' with None
+gliderReleaseAttach = [x[1] if x.__len__() > 1 else 'NULL' for x in
+                       gliderRelease]  # might have to replace 'NULL' with None
 # capitalize releaseAttach
 gliderReleaseAttach = [x.capitalize() for x in gliderReleaseAttach]
 # replace 'Null' with 'nan'
@@ -121,6 +132,8 @@ for i in gliderReleaseDf.itertuples():
         platformReleasePk.append(None)
     else:
         platformReleasePk.append(platformReleaseQ.pk)
+# add platformReleasePk to df
+df['platformReleasePk'] = platformReleasePk
 
 # mission_platformPayload
 # useful : np.array(df.columns)
@@ -136,6 +149,8 @@ for i in gliderPldSN:
         platformPayloadPk.append(None)
     else:
         platformPayloadPk.append(platformPayloadQ.pk)
+# add platformPayloadPk to df
+df['platformPayloadPk'] = platformPayloadPk
 
 # mission_platformPayloadFirmware
 gliderPldFirm = df['pldfirmware']
@@ -150,6 +165,8 @@ for i in gliderPldFirm:
         platformPayloadFirmPk.append(None)
     else:
         platformPayloadFirmPk.append(platformPayloadFirmQ.pk)
+# add platformPayloadFirmPk to df
+df['platformPayloadFirmwarePk'] = platformPayloadFirmPk
 
 # vessel for recovery and deployment
 vessel = df['boatdeprev']
@@ -166,31 +183,34 @@ recoveryVessel = [re.sub('-', ' ', x) for x in recoveryVessel]
 # go through deployment and recovery separately
 # note that we'll have to match them based on partial knowledge on the vessel name provided in excel file
 modelsVessels = models.Vessel.objects.values_list('vessel_name', flat=True).distinct()
-depVesselPk = [ ]
+depVesselPk = []
 for i in deploymentVessel:
     # find which one it best matches with
-    ok = [bool(re.search(i, x)) for x in modelsVessels] # True, False
-    ok = [i for i, x in enumerate(ok) if x] # index
+    ok = [bool(re.search(i, x)) for x in modelsVessels]  # True, False
+    ok = [i for i, x in enumerate(ok) if x]  # index
     # get the first index so it's easier to use
     if len(ok) == 0:
         print(f"Unable to find a match for deployment vessel {i}")
         depVesselPk.append(None)
     else:
         if len(ok) > 1:
-            print(f"Found more than 1 match for deployment vessel {i}. The matches are {[modelsVessels[x] for x in ok]}")
+            print(
+                f"Found more than 1 match for deployment vessel {i}. The matches are {[modelsVessels[x] for x in ok]}")
             print(f"Using the first one")
             ok = ok[0]
-        else :
+        else:
             ok = ok[0]
         okvessel = modelsVessels[ok]
-        depVesselQ = models.Vessel.objects.filter(vessel_name=okvessel).first() # first() is a bit redundant
+        depVesselQ = models.Vessel.objects.filter(vessel_name=okvessel).first()  # first() is a bit redundant
         depVesselPk.append(depVesselQ.pk)
-
-recVesselPk = [ ]
+# add depVesselPk to df
+df['deploymentVesselPk'] = depVesselPk
+# mission_recoveryVessel
+recVesselPk = []
 for i in recoveryVessel:
     # find which one it best matches with
-    ok = [bool(re.search(i, x)) for x in modelsVessels] # True, False
-    ok = [i for i, x in enumerate(ok) if x] # index
+    ok = [bool(re.search(i, x)) for x in modelsVessels]  # True, False
+    ok = [i for i, x in enumerate(ok) if x]  # index
     # get the first index so it's easier to use
     if len(ok) == 0:
         print(f"Unable to find a match for recovery vessel {i}")
@@ -200,38 +220,75 @@ for i in recoveryVessel:
             print(f"Found more than 1 match for recovery vessel {i}. The matches are {[modelsVessels[x] for x in ok]}")
             print(f"Using the first one")
             ok = ok[0]
-        else :
+        else:
             ok = ok[0]
         okvessel = modelsVessels[ok]
         recVesselQ = models.Vessel.objects.filter(vessel_name=okvessel).first()  # first() is a bit redundant
         recVesselPk.append(recVesselQ.pk)
-
+# add recVesselPk to df
+df['recoveryVesselPk'] = recVesselPk
 
 # mission_argosTag - need serial number and(/or?) PTT
 # argosTag_serialNumber
 argosTagSerial = df['ArgosTagsn']
 # argosTag_PTT
 argosTagPTT = df['ArgosTagPTT']
+argosGlider = df['Glider']
+argosMissionNumber = df['missionNumber']
 # get pk from models.ArgosTag
-argosTagList = list(zip(argosTagSerial, argosTagPTT))
-argosTagDf = pd.DataFrame(argosTagList, columns=['serialNumber', 'PTT'])
+argosTagList = list(zip(argosTagSerial, argosTagPTT, argosGlider, argosMissionNumber))
+argosTagDf = pd.DataFrame(argosTagList, columns=['serialNumber', 'PTT', 'Glider', 'missionNumber'])
 argosTagPk = []
+
 for i in argosTagDf.itertuples():
-    argosTagQ = models.ArgosTag.objects.filter(argosTag_serialNumber=getattr(i, 'serialNumber'),
-                                               argosTag_PTT=getattr(i, 'PTT')).first()
-    if argosTagQ is None:
-        print(f"Unable to find primary key value for argos tag with serial number  {getattr(i, 'serialNumber')}"
-              f" with PTT {getattr(i, 'PTT')}")
+    argosMatch = models.ArgosTagSerialNumber.objects.filter(argosTag_serialNumber=getattr(i, 'serialNumber'))
+    # next get the PTT out of each match
+    # have to do it in loop since it's a primary key value
+    argosMatchPTT = []
+    for item in argosMatch.iterator():
+        argosMatchPTT.append(item.argosTag_PTTNumber.argosTag_PTT)
+    argosMatchSerialPk = argosMatch.values_list('argosTag_PTTNumber', flat=True).distinct()
+    # dateMatchSerialList = list(zip(dateMatchSerial, dateMatchSerialPk))
+    # dateMatchSerialDf = pd.DataFrame(dateMatchSerialList, columns=['serialNumber', 'PkValue'])
+    argosPTT = getattr(i, 'PTT')
+    ok = [bool(re.search(argosPTT, x)) for x in argosMatchPTT]  # True/False
+    ok = [i for i, x in enumerate(ok) if x]  # index
+    # get the first index so it's easier to use
+    if len(ok) == 0:
+        print(f"Unable to find a match for argosTag with serial number {getattr(i, 'serialNumber')} "
+              f"and PTT {argosPTT} "
+              f"for {getattr(i, 'Glider')} {getattr(i, 'missionNumber')} ")
         argosTagPk.append(None)
     else:
-        argosTagPk.append(argosTagQ.pk)
+        if len(ok) > 1:
+            print(
+                f"Found more than 1 match for argosTag with serial number {getattr(i, 'serialNumber')} "
+                f"and PTT {argosPTT} "
+                f"The PTT matches are {[argosMatchPTT[x] for x in ok]}")
+            print(f"Using the first one")
+            ok = ok[0]
+        else:
+            ok = ok[0]
+        argosTagQ = models.ArgosTagSerialNumber.objects.filter(argosTag_serialNumber=getattr(i, 'serialNumber'),
+                                                               argosTag_PTTNumber=argosMatchSerialPk[ok])
+        argosTagPk.append(argosTagQ.first().pk)
+# add argosTagPk to df
+df['argosTagPk'] = argosTagPk
 
+# initialize model.Mission
+# for row in df.itertuples():
+#     im = models.Mission(mission_platformName=models.PlatformName.objects.get(pk=getattr(row, 'platformNamePk')),
+#                         mission_number=getattr(row, 'missionNumber'))
 
 # ContributionMission table
+# PI
 contributorPIName = df['PI']
 contributorPIfirstName = [x.split(' ')[0] for x in contributorPIName]
 contributorPIlastName = [x.split(' ')[1] for x in contributorPIName]
-# not sure what 'operator' should be. Leaving this for now
+# Operator
+contributorOpName = df['Operator']
+contributorOpfirstName = [x.split(' ')[0] for x in contributorOpName]
+contributorOplastName = [x.split(' ')[1] for x in contributorOpName]
 # look into different contributor roles
 
 
@@ -241,14 +298,27 @@ instrumentAbbrev = ['GPCTD',
                     'GPCTDDO',
                     'Rinko',
                     'Ecopuck',
-                    'LEGATO',
-                    'PAM']
+                    'LEGATO'
+                    # 'PAM' # omitting PAM for now (2023 01 24) - don't have instrument information in database
+                    ]
+instrumentPk = []
 for d in df.itertuples():
     for i in instrumentAbbrev:
         # get the serial number
         serialNumberName = i + 'SN'
         serialNumber = getattr(d, serialNumberName)
-        #print(f"Serial number : {serialNumber}")
+        if pd.isna(serialNumber):
+            print(f"Serial number for {i} is {serialNumber} "
+                  f"for {getattr(d, 'Glider')} mission {getattr(d, 'missionNumber')} "
+                  f", continuing to next instrument or mission.")
+            continue
+        # convert serial number to string to match with database
+        if isinstance(serialNumber, float):
+            serialNumber = str(int(serialNumber))
+        # if GPCTD, add '0' in front of number
+        if i == 'GPCTD':
+            serialNumber = '0' + serialNumber
+        #  print(f"Serial number : {serialNumber}")
         # get the calibration date
         # PAM does not have calibration date, so set as nan
         if i == 'PAM':
@@ -256,6 +326,7 @@ for d in df.itertuples():
         else:
             calibrationDateName = i + 'caldate'
             calibrationDate = getattr(d, calibrationDateName)
+            # convert timestamp to datetime.date type object
         # get warmup
         # PAM does not have warmup, so set as nan
         if i == 'PAM':
@@ -265,4 +336,35 @@ for d in df.itertuples():
             if i == 'GPCTDDO':
                 i = 'GPCTD'
             warmUpName = i + 'warmup'
-            warmUp = getattr(d, warmUpName)
+        # get match from model using serial number and calibration date
+        # first see if there is a match for the calibration date
+        dateMatch = models.InstrumentCalibration.objects.filter(instrument_calibrationDate=calibrationDate.date())
+        # next get the serial number out of each match
+        # have to do it in loop since it's a primary key value
+        dateMatchSerial = []
+        for item in dateMatch.iterator():
+            dateMatchSerial.append(item.instrument_calibrationSerial.instrument_serialNumber)
+        dateMatchSerialPk = dateMatch.values_list('instrument_calibrationSerial', flat=True).distinct()
+        # dateMatchSerialList = list(zip(dateMatchSerial, dateMatchSerialPk))
+        # dateMatchSerialDf = pd.DataFrame(dateMatchSerialList, columns=['serialNumber', 'PkValue'])
+        ok = [bool(re.search(serialNumber, x)) for x in dateMatchSerial]  # True/False
+        ok = [i for i, x in enumerate(ok) if x]  # index
+        # get the first index so it's easier to use
+        if len(ok) == 0:
+            print(f"Unable to find a match for instrument {i} with serial number {serialNumber} "
+                  f"and calibration date {calibrationDate.date()} "
+                  f"for {getattr(d, 'Glider')} {getattr(d, 'missionNumber')} ")
+            instrumentPk.append(None)
+        else:
+            if len(ok) > 1:
+                print(
+                    f"Found more than 1 match for instrument {i} with serial number  {serialNumber} "
+                    f"and calibration date {calibrationDate.date()}. "
+                    f"The serial number matches are {[dateMatchSerial[x] for x in ok]}")
+                print(f"Using the first one")
+                ok = ok[0]
+            else:
+                ok = ok[0]
+            instrumentQ = models.InstrumentCalibration.objects.filter(instrument_calibrationDate=calibrationDate.date(),
+                                                                      instrument_calibrationSerial=dateMatchSerialPk[ok])
+            instrumentPk.append(instrumentQ.first().pk)

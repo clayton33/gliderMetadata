@@ -97,15 +97,6 @@ class InstrumentCalibration(models.Model):
     instrument_calibrationReportNotes = models.CharField(max_length=20, null=True)
     instrument_calibrationDateNotes = models.CharField(max_length=50, null=True)
 
-
-# might move this one to the end with PlatformMission
-class InstrumentMission(models.Model):
-    instrument_calibration = models.ForeignKey(InstrumentCalibration, on_delete=models.SET_NULL, null=True)
-    instrument_warmUp = models.CharField(max_length=20)
-    instrument_samplingRate = models.CharField(max_length=20)
-    # instrument_mission = models.ForeignKey(Mission)  # not yet created
-
-
 class ContributorPeople(models.Model):
     contributor_lastName = models.CharField(max_length=50)
     contributor_firstName = models.CharField(max_length=50)
@@ -123,10 +114,56 @@ class Institute(models.Model):
     institute_country = models.CharField(max_length=50)
 
 
-class ArgosTag(models.Model):
+class ArgosTagPTT(models.Model):
     argosTag_PTT = models.CharField(max_length=20)
+
+
+class ArgosTagSerialNumber(models.Model):
+    argosTag_PTTNumber = models.ForeignKey(ArgosTagPTT, on_delete=models.SET_NULL, null=True)
     argosTag_serialNumber = models.CharField(max_length=10)
 
 
 class Vessel(models.Model):
     vessel_name = models.CharField(max_length=50)
+
+class Mission(models.Model):
+    mission_platformName = models.ForeignKey(PlatformName, on_delete=models.SET_NULL, null=True)
+    mission_number = models.IntegerField()
+    mission_cruiseNumber = models.CharField(max_length=20)
+    mission_platformNavFirmware = models.ForeignKey(PlatformNavigationFirmware, on_delete=models.SET_NULL, null=True)
+    mission_platformBattery = models.ForeignKey(PlatformBattery, on_delete=models.SET_NULL, null=True)
+    mission_platformRelease = models.ForeignKey(PlatformRelease, on_delete=models.SET_NULL, null=True)
+    mission_platformPayload = models.ForeignKey(PlatformPayload, on_delete=models.SET_NULL, null=True)
+    mission_platformPayloadFirmware = models.ForeignKey(PlatformPayloadFirmware, on_delete=models.SET_NULL, null=True)
+    mission_deploymentDate = models.DateField(null=True)
+    mission_recoveryDate = models.DateField(null=True)
+    mission_batteryMax = models.DecimalField(max_digits=3, decimal_places=1)
+    mission_batteryMin = models.DecimalField(max_digits=3, decimal_places=1)
+    mission_deploymentVessel = models.ForeignKey(Vessel, related_name='deploymentVessel', on_delete=models.SET_NULL, null=True)
+    mission_deploymentLongitude = models.DecimalField(max_digits=7, decimal_places=4)
+    mission_deploymentLatitude = models.DecimalField(max_digits=6, decimal_places=4)
+    mission_recoveryVessel = models.ForeignKey(Vessel, related_name='recoveryVessel', on_delete=models.SET_NULL, null=True)
+    mission_recoveryLongitude = models.DecimalField(max_digits=7, decimal_places=4)
+    mission_recoveryLatitude = models.DecimalField(max_digits=6, decimal_places=4)
+    mission_minimumLongitude = models.DecimalField(max_digits=7, decimal_places=4)
+    mission_minimumLatitude = models.DecimalField(max_digits=6, decimal_places=4)
+    mission_maximumLongitude = models.DecimalField(max_digits=7, decimal_places=4)
+    mission_maximumLatitude = models.DecimalField(max_digits=6, decimal_places=4)
+    mission_waypointsGiven = models.CharField(max_length=100)
+    mission_distanceTravelled = models.DecimalField(max_digits=6, decimal_places=2)
+    mission_numberOfYos = models.IntegerField()
+    mission_numberOfScienceYos = models.IntegerField()
+    mission_profilingScheme = models.CharField(max_length=10)
+    mission_numberOfAlarms = models.IntegerField()
+    mission_numberOfAlarmsWithOT = models.IntegerField()
+    mission_hoursOfOT = models.IntegerField()
+    mission_ballastedDensity = models.DecimalField(max_digits=6, decimal_places=2)
+    mission_argosTag = models.ForeignKey(ArgosTagSerialNumber, on_delete=models.SET_NULL, null=True)
+    mission_institute = models.ForeignKey(Institute, on_delete=models.SET_NULL, null=True)
+    mission_comments = models.CharField(max_length=200)
+
+class InstrumentMission(models.Model):
+    instrument_mission = models.ForeignKey(Mission, on_delete=models.SET_NULL, null=True)
+    instrument_calibration = models.ForeignKey(InstrumentCalibration, on_delete=models.SET_NULL, null=True)
+    instrument_warmUp = models.CharField(max_length=20)
+    instrument_samplingRate = models.CharField(max_length=20)
