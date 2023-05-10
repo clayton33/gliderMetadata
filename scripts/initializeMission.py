@@ -43,6 +43,8 @@ def readMissionFile():
     # dataframe['Ecopuckcaldate'] = convert_date(dataframe['Ecopuckcaldate']) # already in format
     dataframe['LEGATOcaldate'] = convert_date(dataframe['LEGATOcaldate'])
     dataframe['Minifluocaldate'] = convert_date(dataframe['Minifluocaldate'])
+    # specify format for some columns
+    dataframe = dataframe.astype(dict(ArgosTagPTT=str))
     return dataframe
 
 
@@ -63,6 +65,7 @@ for i in gliderSerial:
         platformNamePk.append(None)
     else:
         platformNamePk.append(platformNameQ.pk)
+
 # add platformNamePk to df
 df['platformNamePk'] = platformNamePk
 
@@ -132,6 +135,7 @@ for i in gliderReleaseDf.itertuples():
         platformReleasePk.append(None)
     else:
         platformReleasePk.append(platformReleaseQ.pk)
+
 # add platformReleasePk to df
 df['platformReleasePk'] = platformReleasePk
 
@@ -149,6 +153,7 @@ for i in gliderPldSN:
         platformPayloadPk.append(None)
     else:
         platformPayloadPk.append(platformPayloadQ.pk)
+
 # add platformPayloadPk to df
 df['platformPayloadPk'] = platformPayloadPk
 
@@ -165,6 +170,7 @@ for i in gliderPldFirm:
         platformPayloadFirmPk.append(None)
     else:
         platformPayloadFirmPk.append(platformPayloadFirmQ.pk)
+
 # add platformPayloadFirmPk to df
 df['platformPayloadFirmwarePk'] = platformPayloadFirmPk
 
@@ -203,6 +209,7 @@ for i in deploymentVessel:
         okvessel = modelsVessels[ok]
         depVesselQ = models.Vessel.objects.filter(vessel_name=okvessel).first()  # first() is a bit redundant
         depVesselPk.append(depVesselQ.pk)
+
 # add depVesselPk to df
 df['deploymentVesselPk'] = depVesselPk
 # mission_recoveryVessel
@@ -225,6 +232,7 @@ for i in recoveryVessel:
         okvessel = modelsVessels[ok]
         recVesselQ = models.Vessel.objects.filter(vessel_name=okvessel).first()  # first() is a bit redundant
         recVesselPk.append(recVesselQ.pk)
+
 # add recVesselPk to df
 df['recoveryVesselPk'] = recVesselPk
 
@@ -272,13 +280,46 @@ for i in argosTagDf.itertuples():
         argosTagQ = models.ArgosTagSerialNumber.objects.filter(argosTag_serialNumber=getattr(i, 'serialNumber'),
                                                                argosTag_PTTNumber=argosMatchSerialPk[ok])
         argosTagPk.append(argosTagQ.first().pk)
+
 # add argosTagPk to df
 df['argosTagPk'] = argosTagPk
 
 # initialize model.Mission
-# for row in df.itertuples():
-#     im = models.Mission(mission_platformName=models.PlatformName.objects.get(pk=getattr(row, 'platformNamePk')),
-#                         mission_number=getattr(row, 'missionNumber'))
+for row in df.itertuples():
+     im = models.Mission(mission_platformName=models.PlatformName.objects.get(pk=getattr(row, 'platformNamePk')),
+                         mission_number=getattr(row, 'missionNumber'),
+                         mission_cruiseNumber=getattr(row, 'CruiseName'), # check
+                         mission_platformNavFirmware=models.PlatformNavigationFirmware.objects.get(pk=getattr(row, 'platformNavigationFirmwarePk')),
+                         mission_platformBattery=models.PlatformBattery.objects.get(pk=getattr(row, 'platformBatteryPk')),
+                         mission_platformRelease=models.PlatformRelease.objects.get(pk=getattr(row, 'platformReleasePk')),
+                         mission_platformPayload=models.PlatformPayload.objects.get(pk=getattr(row, 'platformPayloadPk')),
+                         mission_platformPayloadFirmware=models.PlatformPayloadFirmware.objects.get(pk=getattr(row, 'platformPayloadFirmwarePk')),
+                         mission_deploymentDate=getattr(row, 'Deploymentdate'),
+                         mission_recoveryDate=getattr(row, 'Recoverydate'),
+                         mission_batteryMax=getattr(row, 'Batterymax'),
+                         mission_batteryMin=getattr(row,'Batterymin'),
+                         mission_deploymentVessel=models.Vessel.objects.get(pk=getattr(row, 'deploymentVesselPk')),
+                         mission_deploymentLongitude=getattr(row, 'Deploylon'),
+                         mission_deploymentLatitude=getattr(row, 'Deploylat'),
+                         mission_recoveryVessel=models.Vessel.objects.get(pk=getattr(row, 'recoveryVesselPk')),
+                         mission_recoveryLongitude=None,
+                         mission_recoveryLatitude=None,
+                         mission_minimumLongitude=getattr(row, 'Lonmin'),
+                         mission_minimumLatitude=getattr(row, 'Latmin'),
+                         mission_maximumLongitude=getattr(row, 'Lonmax'),
+                         mission_maximumLatitude=getattr(row, 'Latmax'),
+                         mission_waypointsGiven=getattr(row, 'Waypointgiven'),
+                         mission_distanceTravelled=getattr(row, 'Distancetravelledkm'),
+                         mission_numberOfYos=getattr(row, 'numberOfYos'),
+                         mission_numberOfScienceYos=getattr(row, 'numberOfScienceProfiles'),
+                         mission_profilingScheme=getattr(row, 'scienceEveryNumberOfYos'), # check attr name
+                         mission_numberOfAlarms=getattr(row, 'numberOfAlarms'),
+                         mission_numberOfAlarmsWithOT=getattr(row, 'numberOfAlarmsWithOT'), # check db name
+                         mission_hoursOfOT=getattr(row, 'numberOfAlarmsWithOT'), # check db name
+                         mission_ballastedDensity=getattr(row, 'Ballasteddensity'),
+                         mission_argosTag=models.ArgosTagSerialNumber.objects.get(pk=getattr(row, 'argosTagPk')),
+                         mission_institute=None,
+                         mission_comments=getattr(row, 'Comments'))
 
 # ContributionMission table
 # PI
@@ -303,13 +344,14 @@ instrumentAbbrev = ['GPCTD',
                     ]
 instrumentPk = []
 for d in df.itertuples():
+    print(f"{getattr(d, 'Glider')} mission {getattr(d, 'missionNumber')}")
     for i in instrumentAbbrev:
         # get the serial number
         serialNumberName = i + 'SN'
         serialNumber = getattr(d, serialNumberName)
         if pd.isna(serialNumber):
             print(f"Serial number for {i} is {serialNumber} "
-                  f"for {getattr(d, 'Glider')} mission {getattr(d, 'missionNumber')} "
+                  #f"for {getattr(d, 'Glider')} mission {getattr(d, 'missionNumber')} "
                   f", continuing to next instrument or mission.")
             continue
         # convert serial number to string to match with database
@@ -334,8 +376,9 @@ for d in df.itertuples():
         else:
             # GPCTD DO warm up is same as GPCTD
             if i == 'GPCTDDO':
-                i = 'GPCTD'
-            warmUpName = i + 'warmup'
+                warmUpName = 'GPCTD' + 'warmup'
+            else :
+                warmUpName = i + 'warmup'
         # get match from model using serial number and calibration date
         # first see if there is a match for the calibration date
         dateMatch = models.InstrumentCalibration.objects.filter(instrument_calibrationDate=calibrationDate.date())
@@ -353,7 +396,8 @@ for d in df.itertuples():
         if len(ok) == 0:
             print(f"Unable to find a match for instrument {i} with serial number {serialNumber} "
                   f"and calibration date {calibrationDate.date()} "
-                  f"for {getattr(d, 'Glider')} {getattr(d, 'missionNumber')} ")
+                  #f"for {getattr(d, 'Glider')} {getattr(d, 'missionNumber')} "
+                  )
             instrumentPk.append(None)
         else:
             if len(ok) > 1:
