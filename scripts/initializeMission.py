@@ -285,41 +285,41 @@ for i in argosTagDf.itertuples():
 df['argosTagPk'] = argosTagPk
 
 # initialize model.Mission
-for row in df.itertuples():
-     im = models.Mission(mission_platformName=models.PlatformName.objects.get(pk=getattr(row, 'platformNamePk')),
-                         mission_number=getattr(row, 'missionNumber'),
-                         mission_cruiseNumber=getattr(row, 'CruiseName'), # check
-                         mission_platformNavFirmware=models.PlatformNavigationFirmware.objects.get(pk=getattr(row, 'platformNavigationFirmwarePk')),
-                         mission_platformBattery=models.PlatformBattery.objects.get(pk=getattr(row, 'platformBatteryPk')),
-                         mission_platformRelease=models.PlatformRelease.objects.get(pk=getattr(row, 'platformReleasePk')),
-                         mission_platformPayload=models.PlatformPayload.objects.get(pk=getattr(row, 'platformPayloadPk')),
-                         mission_platformPayloadFirmware=models.PlatformPayloadFirmware.objects.get(pk=getattr(row, 'platformPayloadFirmwarePk')),
-                         mission_deploymentDate=getattr(row, 'Deploymentdate'),
-                         mission_recoveryDate=getattr(row, 'Recoverydate'),
-                         mission_batteryMax=getattr(row, 'Batterymax'),
-                         mission_batteryMin=getattr(row,'Batterymin'),
-                         mission_deploymentVessel=models.Vessel.objects.get(pk=getattr(row, 'deploymentVesselPk')),
-                         mission_deploymentLongitude=getattr(row, 'Deploylon'),
-                         mission_deploymentLatitude=getattr(row, 'Deploylat'),
-                         mission_recoveryVessel=models.Vessel.objects.get(pk=getattr(row, 'recoveryVesselPk')),
-                         mission_recoveryLongitude=None,
-                         mission_recoveryLatitude=None,
-                         mission_minimumLongitude=getattr(row, 'Lonmin'),
-                         mission_minimumLatitude=getattr(row, 'Latmin'),
-                         mission_maximumLongitude=getattr(row, 'Lonmax'),
-                         mission_maximumLatitude=getattr(row, 'Latmax'),
-                         mission_waypointsGiven=getattr(row, 'Waypointgiven'),
-                         mission_distanceTravelled=getattr(row, 'Distancetravelledkm'),
-                         mission_numberOfYos=getattr(row, 'numberOfYos'),
-                         mission_numberOfScienceYos=getattr(row, 'numberOfScienceProfiles'),
-                         mission_profilingScheme=getattr(row, 'scienceEveryNumberOfYos'), # check attr name
-                         mission_numberOfAlarms=getattr(row, 'numberOfAlarms'),
-                         mission_numberOfAlarmsWithOT=getattr(row, 'numberOfAlarmsWithOT'), # check db name
-                         mission_hoursOfOT=getattr(row, 'numberOfAlarmsWithOT'), # check db name
-                         mission_ballastedDensity=getattr(row, 'Ballasteddensity'),
-                         mission_argosTag=models.ArgosTagSerialNumber.objects.get(pk=getattr(row, 'argosTagPk')),
-                         mission_institute=None,
-                         mission_comments=getattr(row, 'Comments'))
+# for row in df.itertuples():
+#      im = models.Mission(mission_platformName=models.PlatformName.objects.get(pk=getattr(row, 'platformNamePk')),
+#                          mission_number=getattr(row, 'missionNumber'),
+#                          mission_cruiseNumber=getattr(row, 'CruiseName'), # check
+#                          mission_platformNavFirmware=models.PlatformNavigationFirmware.objects.get(pk=getattr(row, 'platformNavigationFirmwarePk')),
+#                          mission_platformBattery=models.PlatformBattery.objects.get(pk=getattr(row, 'platformBatteryPk')),
+#                          mission_platformRelease=models.PlatformRelease.objects.get(pk=getattr(row, 'platformReleasePk')),
+#                          mission_platformPayload=models.PlatformPayload.objects.get(pk=getattr(row, 'platformPayloadPk')),
+#                          mission_platformPayloadFirmware=models.PlatformPayloadFirmware.objects.get(pk=getattr(row, 'platformPayloadFirmwarePk')),
+#                          mission_deploymentDate=getattr(row, 'Deploymentdate'),
+#                          mission_recoveryDate=getattr(row, 'Recoverydate'),
+#                          mission_batteryMax=getattr(row, 'Batterymax'),
+#                          mission_batteryMin=getattr(row,'Batterymin'),
+#                          mission_deploymentVessel=models.Vessel.objects.get(pk=getattr(row, 'deploymentVesselPk')),
+#                          mission_deploymentLongitude=getattr(row, 'Deploylon'),
+#                          mission_deploymentLatitude=getattr(row, 'Deploylat'),
+#                          mission_recoveryVessel=models.Vessel.objects.get(pk=getattr(row, 'recoveryVesselPk')),
+#                          mission_recoveryLongitude=None,
+#                          mission_recoveryLatitude=None,
+#                          mission_minimumLongitude=getattr(row, 'Lonmin'),
+#                          mission_minimumLatitude=getattr(row, 'Latmin'),
+#                          mission_maximumLongitude=getattr(row, 'Lonmax'),
+#                          mission_maximumLatitude=getattr(row, 'Latmax'),
+#                          mission_waypointsGiven=getattr(row, 'Waypointgiven'),
+#                          mission_distanceTravelled=getattr(row, 'Distancetravelledkm'),
+#                          mission_numberOfYos=getattr(row, 'numberOfYos'),
+#                          mission_numberOfScienceYos=getattr(row, 'numberOfScienceProfiles'),
+#                          mission_profilingScheme=getattr(row, 'scienceEveryNumberOfYos'), # check attr name
+#                          mission_numberOfAlarms=getattr(row, 'numberOfAlarms'),
+#                          mission_numberOfAlarmsWithOT=getattr(row, 'numberOfAlarmsWithOT'), # check db name
+#                          mission_hoursOfOT=getattr(row, 'numberOfAlarmsWithOT'), # check db name
+#                          mission_ballastedDensity=getattr(row, 'Ballasteddensity'),
+#                          mission_argosTag=models.ArgosTagSerialNumber.objects.get(pk=getattr(row, 'argosTagPk')),
+#                          mission_institute=None,
+#                          mission_comments=getattr(row, 'Comments'))
 
 # ContributionMission table
 # PI
@@ -343,6 +343,9 @@ instrumentAbbrev = ['GPCTD',
                     # 'PAM' # omitting PAM for now (2023 01 24) - don't have instrument information in database
                     ]
 instrumentPk = []
+instrumentType = []
+instrumentWarmUp = []
+instrumentSamplingRate = []
 for d in df.itertuples():
     print(f"{getattr(d, 'Glider')} mission {getattr(d, 'missionNumber')}")
     for i in instrumentAbbrev:
@@ -379,6 +382,11 @@ for d in df.itertuples():
                 warmUpName = 'GPCTD' + 'warmup'
             else :
                 warmUpName = i + 'warmup'
+        # get samplingrate
+        if i == 'GPCTDDO':
+            samplingRateName = 'Samplingrate' + 'GPCTD' + 's'
+        else :
+            samplingRateName = 'Samplingrate' + i + 's'
         # get match from model using serial number and calibration date
         # first see if there is a match for the calibration date
         dateMatch = models.InstrumentCalibration.objects.filter(instrument_calibrationDate=calibrationDate.date())
@@ -412,3 +420,15 @@ for d in df.itertuples():
             instrumentQ = models.InstrumentCalibration.objects.filter(instrument_calibrationDate=calibrationDate.date(),
                                                                       instrument_calibrationSerial=dateMatchSerialPk[ok])
             instrumentPk.append(instrumentQ.first().pk)
+        instrumentType.append(i)
+        instrumentWarmUp.append(getattr(d, warmUpName))
+        instrumentSamplingRate.append(getattr(d, samplingRateName))
+
+instrumentDf = list(zip(instrumentPk, instrumentType, instrumentWarmUp, instrumentSamplingRate))
+
+# initialize InstrumentMission
+for row in instrumentDf.itertuples():
+    iim = models.InstrumentMission(#instrument_mission = , # need to hook up pk after initialization of Mission
+                                   instrument_calibration = models.InstrumentCalibration.objects.get(pk=getattr(row, 'instrumentPk')),
+                                   instrument_warmUp = getattr(row, 'instrumentWarmUp'),
+                                   instrument_samplingRate = getattr(row, 'instrumentSamplingRate'))
