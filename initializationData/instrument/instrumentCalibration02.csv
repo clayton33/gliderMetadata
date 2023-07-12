@@ -1,0 +1,4 @@
+instrumentSerialNumber_id,instrument_calibrationDate,instrument_calibrationReport,instrument_calibrationReportNotes,instrument_calibrationDateNotes
+11,"""2023-02-26""","""SEA024_CTD_DO_calib_files_SN0188_2023""",directory,temperature sensor document
+12,"""2023-01-21""","""SEA024_CTD_DO_calib_files_SN0188_2023""",directory,SOCadjusted document
+4,"""2023-01-09""","""20230321101943333.pdf""",singleFile,document not in original platform directory

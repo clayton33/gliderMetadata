@@ -28,9 +28,9 @@ ic = models.InstrumentCalibration.objects.get(pk=41)
 ic.instrument_calibrationDate = pd.to_datetime("2019-12-29", format='%Y-%m-%d').date()
 ic.save()
 
-# GPCTD 0184 2019 calibration
+# GPCTD 0184 2022 calibration
 ic = models.InstrumentCalibration.objects.get(pk=16)
-ic.instrument_calibrationDate = pd.to_datetime("2019-12-29", format='%Y-%m-%d').date()
+ic.instrument_calibrationDate = pd.to_datetime("2022-02-10", format='%Y-%m-%d').date()
 ic.save()
 
 # GPCTD 0186 2020 calibration

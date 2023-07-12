@@ -215,6 +215,9 @@ df['deploymentVesselPk'] = depVesselPk
 # mission_recoveryVessel
 recVesselPk = []
 for i in recoveryVessel:
+    if i == "Eastcom":
+        print(f"Renaming {i} as EastCom")
+        i = "EastCom"
     # find which one it best matches with
     ok = [bool(re.search(i, x)) for x in modelsVessels]  # True, False
     ok = [i for i, x in enumerate(ok) if x]  # index
@@ -385,6 +388,10 @@ for d in df.itertuples():
         # get samplingrate
         if i == 'GPCTDDO':
             samplingRateName = 'Samplingrate' + 'GPCTD' + 's'
+        elif i == 'Ecopuck':
+            samplingRateName = 'Samplingrate' + 'Eco' + 's'
+        elif i == 'LEGATO':
+            samplingRateName = 'Samplingrate' + 'Legato' + 's'
         else :
             samplingRateName = 'Samplingrate' + i + 's'
         # get match from model using serial number and calibration date
@@ -427,8 +434,8 @@ for d in df.itertuples():
 instrumentDf = list(zip(instrumentPk, instrumentType, instrumentWarmUp, instrumentSamplingRate))
 
 # initialize InstrumentMission
-for row in instrumentDf.itertuples():
-    iim = models.InstrumentMission(#instrument_mission = , # need to hook up pk after initialization of Mission
-                                   instrument_calibration = models.InstrumentCalibration.objects.get(pk=getattr(row, 'instrumentPk')),
-                                   instrument_warmUp = getattr(row, 'instrumentWarmUp'),
-                                   instrument_samplingRate = getattr(row, 'instrumentSamplingRate'))
+# for row in instrumentDf.itertuples():
+#     iim = models.InstrumentMission(#instrument_mission = , # need to hook up pk after initialization of Mission
+#                                    instrument_calibration = models.InstrumentCalibration.objects.get(pk=getattr(row, 'instrumentPk')),
+#                                    instrument_warmUp = getattr(row, 'instrumentWarmUp'),
+#                                    instrument_samplingRate = getattr(row, 'instrumentSamplingRate'))
