@@ -191,6 +191,9 @@ recoveryVessel = [re.sub('-', ' ', x) for x in recoveryVessel]
 modelsVessels = models.Vessel.objects.values_list('vessel_name', flat=True).distinct()
 depVesselPk = []
 for i in deploymentVessel:
+    if i == "Eastcom":
+        print(f"Renaming {i} as EastCom")
+        i = "EastCom"
     # find which one it best matches with
     ok = [bool(re.search(i, x)) for x in modelsVessels]  # True, False
     ok = [i for i, x in enumerate(ok) if x]  # index

@@ -1,5 +1,9 @@
+import io
+import pandas as pd
+from gliderMetadataApp import models
+
 def initiate_InstrumentCalibration():
-    file = io.FileIO(file=r".\initializationData\instrument\instrumentCalibration02.csv", mode="r")
+    file = io.FileIO(file=r".\initializationData\instrument\instrumentCalibration03.csv", mode="r")
     df = pd.read_csv(file)
     # format instrument_calibrationDate
     df['instrument_calibrationDate'] = pd.to_datetime(df['instrument_calibrationDate'], format='"%Y-%m-%d"')
