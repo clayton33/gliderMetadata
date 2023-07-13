@@ -69,3 +69,18 @@ ic.save()
 ic = models.InstrumentCalibration.objects.get(pk=49)
 ic.instrument_calibrationSerial_id = 18
 ic.save()
+
+# Minifluo, 2020 calibration
+ic = models.InstrumentCalibration.objects.get(pk=45)
+ic.instrument_calibrationDate = pd.to_datetime("2020-03-16", format='%Y-%m-%d').date()
+ic.save()
+
+# GPCTD 0175 2022 calibration
+ic = models.InstrumentCalibration.objects.get(pk=25)
+ic.instrument_calibrationDate = pd.to_datetime("2022-02-19", format='%Y-%m-%d').date()
+ic.save()
+
+# GPCTD DO 43-3276 2022 calibration (end of year 2021)
+ic = models.InstrumentCalibration.objects.get(pk=29)
+ic.instrument_calibrationDate = pd.to_datetime("2021-12-22", format='%Y-%m-%d').date()
+ic.save()
