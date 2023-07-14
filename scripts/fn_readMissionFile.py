@@ -1,6 +1,9 @@
 import io
 import pandas as pd
 
+def convert_date(date):
+    return pd.to_datetime(date.apply(lambda d: str(d)[0:8]), errors='coerce')
+
 def readMissionFile():
     file = io.FileIO(file=r".\initializationData\GliderMission.xlsx", mode="r")
     dataframe = pd.read_excel(file, skiprows=1)

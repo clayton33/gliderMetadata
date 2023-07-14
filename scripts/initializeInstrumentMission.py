@@ -12,8 +12,30 @@ def convert_date(date):
 
 df = rmf.readMissionFile()
 
+
 # InstrumentMission table
-# have to iterate through each for since there are multiple instruments on the glider per mission
+
+# instrument_mission
+# get pk value of the platform
+# mission_platformName
+# reformat df['Glider'] to be able to match it with database
+gliderSerial = [re.sub('SEA(\\d+)', '\\1', x) for x in df['Glider']]
+gliderSerial = ['"' + x + '"' for x in gliderSerial]
+# get pk from models.PlatformName
+platformNamePk = []
+for i in gliderSerial:
+    platformNameQ = models.PlatformName.objects.filter(platform_serial=i).first()
+    if platformNameQ is None:
+        print(f"Unable to find primary key value for glider with serial number {i}")
+        platformNamePk.append(None)
+    else:
+        platformNamePk.append(platformNameQ.pk)
+
+# add platformNamePk to df
+df['platformNamePk'] = platformNamePk
+# get pk from models.Mission
+
+# have to iterate through each instrument since there are multiple instruments on the glider per mission
 instrumentAbbrev = ['GPCTD',
                     'GPCTDDO',
                     'Rinko',
@@ -23,11 +45,16 @@ instrumentAbbrev = ['GPCTD',
                     # 'PAM' # omitting PAM for now (2023 01 24) - don't have instrument information in database
                     ]
 instrumentPk = []
+instrumentMissionPk = []
 instrumentType = []
 instrumentWarmUp = []
 instrumentSamplingRate = []
+
 for d in df.itertuples():
     print(f"{getattr(d, 'Glider')} mission {getattr(d, 'missionNumber')}")
+    # get pk value from models.Mission
+    missionQ = models.Mission.objects.filter(mission_platformName=getattr(d, 'platformNamePk'),
+                                             mission_number=getattr(d, 'missionNumber')).first()
     for i in instrumentAbbrev:
         # get the serial number
         serialNumberName = i + 'SN'
@@ -111,12 +138,22 @@ for d in df.itertuples():
         instrumentType.append(i)
         instrumentWarmUp.append(getattr(d, warmUpName))
         instrumentSamplingRate.append(getattr(d, samplingRateName))
+        if missionQ is None:
+            print(f"Unable to find primary key value for glider{getattr(d, 'Glider')} mission {getattr(d, 'missionNumber')}")
+            instrumentMissionPk.append(None)
+        else:
+            instrumentMissionPk.append(missionQ.pk)
 
-instrumentDf = list(zip(instrumentPk, instrumentType, instrumentWarmUp, instrumentSamplingRate))
+
+instrumentDf = pd.DataFrame(list(zip(instrumentMissionPk, instrumentPk,
+                                     instrumentType, instrumentWarmUp, instrumentSamplingRate)),
+                            columns=['instrumentMissionPk', 'instrumentPk',
+                                     'instrumentType', 'instrumentWarmUp', 'instrumentSamplingRate'])
 
 # initialize InstrumentMission
-# for row in instrumentDf.itertuples():
-#     iim = models.InstrumentMission(#instrument_mission = , # need to hook up pk after initialization of Mission
-#                                    instrument_calibration = models.InstrumentCalibration.objects.get(pk=getattr(row, 'instrumentPk')),
-#                                    instrument_warmUp = getattr(row, 'instrumentWarmUp'),
-#                                    instrument_samplingRate = getattr(row, 'instrumentSamplingRate'))
+for row in instrumentDf.itertuples():
+    iim = models.InstrumentMission(instrument_mission = models.Mission.objects.get(pk=getattr(row, 'instrumentMissionPk')),
+                                   instrument_calibration = models.InstrumentCalibration.objects.get(pk=getattr(row, 'instrumentPk')),
+                                   instrument_warmUp = getattr(row, 'instrumentWarmUp'),
+                                   instrument_samplingRate = getattr(row, 'instrumentSamplingRate'))
+    iim.save()
