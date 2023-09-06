@@ -1,6 +1,4 @@
-contributor_role
-Program Coordinator
-Principal Investigator
-Co-principal Investigator
-Data Processor
-Technician
+contributor_vocabulary,contributor_role
+2,principalInvestigator
+2,processor
+2,custodian

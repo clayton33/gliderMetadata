@@ -1,0 +1,30 @@
+platform_variablePlatformCompany,platform_variableStandardCF,platform_variableSourceName,platform_variableSourceUnits
+13,,Timestamp,
+13,,NavState,
+13,,SecurityLevel,
+13,,Heading,degrees
+13,,Declination,degrees
+13,,Pitch,degrees
+13,,Roll,degrees
+13,,Depth,dbar
+13,,Temperature,Celsius
+13,,Pa,Pascal
+13,,Lon,degrees minutes decimal
+13,,Lat,degrees minutes decimal
+13,,DeadReckoning,boolean
+13,,DesiredH,degrees
+13,,BallastCmd,ml
+13,,BallasPos,ml
+13,,LinCmd,mm
+13,,LinPos,mm
+13,,AngCmd,degrees
+13,,AngPos,degrees
+13,,Voltage,volts
+13,,Altitude,ml
+13,1,PLD_REALTIMECLOCK,
+13,,NAV_RESOURCE,
+13,,NAV_MISSIONID,
+13,,NAV_NUMBEROFYO,
+13,3,NAV_LONGITUDE,degrees minutes decimal
+13,2,NAT_LATITUDE,degrees minutes decimal
+13,,NAV_DEPTH,dbar

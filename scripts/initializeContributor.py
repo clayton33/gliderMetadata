@@ -18,7 +18,8 @@ def initiate_ContributorRole():
     file = io.FileIO(file=r".\initializationData\contributor\contributorRole.csv", mode="r")
     df = pd.read_csv(file)
     for row in df.itertuples():
-        cr = models.ContributorRole(contributor_role=getattr(row, "contributor_role"))
+        cr = models.ContributorRole(contributor_vocabulary = models.Vocabulary.objects.get(pk=getattr(row, 'contributor_vocabulary')),
+                                    contributor_role=getattr(row, "contributor_role"))
         cr.save()
 
 

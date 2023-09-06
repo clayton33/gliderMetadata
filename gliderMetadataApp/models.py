@@ -1,5 +1,9 @@
 from django.db import models
 
+class Vocabulary(models.Model):
+    vocabulary_name = models.CharField(max_length=100, null=False)
+    vocabulary_note = models.CharField(max_length=50, null=True)
+
 
 class PlatformCompany(models.Model):
     platform_company = models.CharField(max_length=50, null=True)
@@ -97,6 +101,7 @@ class InstrumentCalibration(models.Model):
     instrument_calibrationReportNotes = models.CharField(max_length=20, null=True)
     instrument_calibrationDateNotes = models.CharField(max_length=50, null=True)
 
+
 class ContributorPeople(models.Model):
     contributor_lastName = models.CharField(max_length=50)
     contributor_firstName = models.CharField(max_length=50)
@@ -104,7 +109,51 @@ class ContributorPeople(models.Model):
 
 
 class ContributorRole(models.Model):
+    contributor_vocabulary = models.ForeignKey(Vocabulary, on_delete=models.SET_NULL, null=True)
     contributor_role = models.CharField(max_length=50)
+
+
+class VariableCFStandard(models.Model):
+    variable_nameVocabulary = models.ForeignKey(Vocabulary, on_delete=models.SET_NULL, null=True)
+    variable_standardName = models.CharField(max_length=100)
+
+class VariableNERCStandard(models.Model):
+    variable_nameVocabulary = models.ForeignKey(Vocabulary, on_delete=models.SET_NULL, null=True)
+    variable_standardNameUrn = models.CharField(max_length=100)
+    variable_standardNameUri = models.CharField(max_length=100)
+
+class UnitCFStandard(models.Model):
+    variable_nameVocabulary = models.ForeignKey(Vocabulary, on_delete=models.SET_NULL, null=True)
+    variable_unit = models.CharField(max_length=25)
+
+class UnitNERCStandard(models.Model):
+    variable_nameVocabulary = models.ForeignKey(Vocabulary, on_delete=models.SET_NULL, null=True)
+    variable_unitUrn = models.CharField(max_length=50)
+    variable_unitUri = models.CharField(max_length=100)
+
+class Variable(models.Model):
+    variable_parameterName = models.CharField(max_length=50)
+    variable_longName = models.CharField(max_length=75)
+    variable_parameterNameComment = models.CharField(max_length=50, null=True)
+    variable_cfName = models.ForeignKey(VariableCFStandard, on_delete=models.SET_NULL, null=True)
+    variable_nercName = models.ForeignKey(VariableNERCStandard, on_delete=models.SET_NULL, null=True)
+    variable_cfUnit = models.ForeignKey(UnitCFStandard, on_delete=models.SET_NULL, null=True)
+    variable_nercUnit = models.ForeignKey(UnitNERCStandard, on_delete=models.SET_NULL, null=True)
+
+
+class InstrumentVariable(models.Model):
+    instrument_variablePlatformCompany = models.ForeignKey(PlatformCompany, on_delete=models.SET_NULL, null=True)
+    instrument_variableInstrumentModel = models.ForeignKey(InstrumentModel, on_delete=models.SET_NULL, null=True)
+    instrument_variableStandardName = models.ForeignKey(Variable, on_delete=models.SET_NULL, null=True)
+    instrument_variableSourceName = models.CharField(max_length=50)
+    instrument_variableSourceUnits = models.CharField(max_length=50, null=True)
+
+
+class PlatformVariable(models.Model):
+    platform_variablePlatformCompany = models.ForeignKey(PlatformCompany, on_delete=models.SET_NULL, null=True)
+    platform_variableStandardName = models.ForeignKey(Variable, on_delete=models.SET_NULL, null=True)
+    platform_variableSourceName = models.CharField(max_length=50)
+    platform_variableSourceUnits = models.CharField(max_length=50, null=True)
 
 
 class Institute(models.Model):
@@ -161,9 +210,15 @@ class Mission(models.Model):
     mission_argosTag = models.ForeignKey(ArgosTagSerialNumber, on_delete=models.SET_NULL, null=True)
     mission_institute = models.ForeignKey(Institute, on_delete=models.SET_NULL, null=True)
     mission_comments = models.CharField(max_length=300)
+    mission_summary = models.CharField(max_length=1200, null=True)
 
 class InstrumentMission(models.Model):
     instrument_mission = models.ForeignKey(Mission, on_delete=models.SET_NULL, null=True)
     instrument_calibration = models.ForeignKey(InstrumentCalibration, on_delete=models.SET_NULL, null=True)
     instrument_warmUp = models.CharField(max_length=20)
     instrument_samplingRate = models.CharField(max_length=20)
+
+class ContributorMission(models.Model):
+    contributor_mission = models.ForeignKey(Mission, on_delete=models.SET_NULL, null=True)
+    contributor_missionPerson = models.ForeignKey(ContributorPeople, on_delete=models.SET_NULL, null=True)
+    contributor_missionRole = models.ForeignKey(ContributorRole, on_delete=models.SET_NULL, null=True)

@@ -1,0 +1,15 @@
+variable_nameVocabulary,variable_standardName,variable_longName,variable_units
+1,time,Time,seconds since 1970-01-01T00:00:00Z
+1,latitude,latitude,degrees_north
+1,longitude,longitude,degrees_east
+1,platform_orientation,glider heading angle,rad
+1,platform_pitch,glider pitch angle,rad
+1,platform_roll,glider roll angle,rad
+1,sea_water_electrical_conductivity,water conductivity,S m-1
+1,sea_water_temperature,water temperature,Celsius
+1,sea_water_pressure,water pressure,dbar
+1,concentration_of_chlorophyll_in_sea_water,chlorophyll,mg m-3
+1,mole_concentration_of_dissolved_molecular_oxygen_in_sea_water,oxygen concentration,umol l-1
+1,temperature_of_sensor_for_oxygen_in_sea_water,oxygen sensor temperature,Celsius
+1,eastward_sea_water_velocity,depth-averaged eastward sea water velocity,m s-1
+1,northward_sea_water_velocity,depth-averaged northward sea water velocity,m s-1
