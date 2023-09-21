@@ -1,0 +1,4 @@
+parameterName,longName,nameComment,cfStandardName,nercParameterUrn,nercParameterUri,cfUnit,nercUnitUrn,nercUnitUri
+platform_orientation,glider heading angle,extra,platform_orientation,,,rad,,
+platform_pitch,glider pitch angle,extra,platform_pitch,,,rad,,
+platform_roll,glider roll angle,extra,platform_roll,,,rad,,

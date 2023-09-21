@@ -1,0 +1,19 @@
+parameterName,longName,nameComment,cfStandardName,nercParameterUrn,nercParameterUri,cfUnit,nercUnitUrn,nercUnitUri
+temperature,Temperature,ioos,sea_water_temperature,SDN:P01::TEMPST01,http://vocab.nerc.ac.uk/collection/P01/current/TEMPST01/,degree_Celsius,SDN:P061::UPAA,http://vocab.nerc.ac.uk/collection/P06/current/UPAA/
+conductivity,Conductivity,ioos,sea_water_electrical_conductivity,SDN:P01::CNDCST01,http://vocab.nerc.ac.uk/collection/P01/current/CNDCST01/,mhos/m,SDN:P061::UECA,http://vocab.nerc.ac.uk/collection/P06/current/UECA/
+salinity,Salinity,ioos,sea_water_salinity,SDN:P01::PSALST01,http://vocab.nerc.ac.uk/collection/P01/current/PSALST01/,psu,SDN:P061::UUUU,http://vocab.nerc.ac.uk/collection/P06/current/UUUU/
+density,Density,ioos,sea_water_density,,,kg m-3,,
+lat,Latitude,ioos,latitude,,,degree_north,,
+lon,Longitude,ioos,longitude,,,degree_east,,
+pressure,Pressure,ioos,sea_water_pressure,SDN:P01::PRESPR01,http://vocab.nerc.ac.uk/collection/P01/current/PRESPR01/,decibar,SDN:P061::UPDB,http://vocab.nerc.ac.uk/collection/P06/current/UPDB/
+time,Time,ioos,,,,,,
+depth,Depth,ioos,depth,,,m,,
+profile_id,Profile ID,ioos,,,,,,
+profile_time,Profile Center Time,ioos,,,,,,
+profile_lat,Profile Center Latitude,ioos,,,,degree_north,,
+profile_lon,Profile Center Longitude,ioos,,,,degree_east,,
+time_uv,Depth-Averaged Time,ioos,,,,,,
+lat_uv,Depth-Averaged Latitude,ioos,,,,degree_north,,
+lon_uv,Depth-Averaged Longitude,ioos,,,,degree_east,,
+u,Depth-Averaged Eastward Sea Water Velocity,ioos,eastward_sea_water_velocity,,,m s-1,,
+v,Depth-Averaged Northward Sea Water Velocity,ioos,northward_sea_water_velocity,,,m s-1,,

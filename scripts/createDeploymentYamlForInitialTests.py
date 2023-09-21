@@ -12,7 +12,10 @@ missions = [['"032"', 79],
             ['"024"', 67],
             ['"024"', 69],
             ['"019"', 49],
-            ['"032"', 51]]
+            ['"032"', 51],
+            ['"022"', 88],
+            ['"022"', 91],
+            ['"021"', 71]]
 mdf = pd.DataFrame(missions,
                    columns = ['serialNumber', 'missionNumber'])
 
@@ -22,9 +25,15 @@ for row in mdf.itertuples():
     filename = 'deployment' + '_' + \
                'SEA' + getattr(row, 'serialNumber').strip('\"') + 'M00' + str(getattr(row, 'missionNumber')) + \
                 '.yml'
+    snCheck = getattr(row, 'serialNumber') == '"032"'
+    mnCheck = getattr(row, 'missionNumber') in [65, 60]
+    if snCheck & mnCheck:
+        timebase_sourceVariable = 'LEGATO_TEMPERATURE'  # not sure ?
+    else:
+        timebase_sourceVariable = 'GPCTD_TEMPERATURE'
     d.createPygliderIOOSyaml(platform_company='Alseamar',
                              platform_model='SeaExplorer',
                              platform_serial=getattr(row, 'serialNumber'),
                              mission_number=getattr(row, 'missionNumber'),
-                             timebase_sourceVariable='GPCTD_TEMPERATURE',
+                             timebase_sourceVariable=timebase_sourceVariable,
                              filename=filename)

@@ -7,9 +7,10 @@ def initiate_VariableCFStandard():
     df = pd.read_csv(file)
     for row in df.itertuples():
          vcf = models.VariableCFStandard(variable_nameVocabulary = models.Vocabulary.objects.get(pk=getattr(row, 'variable_nameVocabulary')),
-                                         variable_standardName = getattr(row, 'variable_standardName'),
-                                         variable_longName = getattr(row, 'variable_longName'),
-                                         variable_units = getattr(row, 'variable_units'))
+                                         variable_standardName = getattr(row, 'variable_standardName'))#,
+                                         #variable_longName = getattr(row, 'variable_longName'),
+                                         #variable_units = getattr(row, 'variable_units'))
+         # on 20230908 changes the table, omitted longName and units
          vcf.save()
 
 

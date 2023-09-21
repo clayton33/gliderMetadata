@@ -117,19 +117,23 @@ class VariableCFStandard(models.Model):
     variable_nameVocabulary = models.ForeignKey(Vocabulary, on_delete=models.SET_NULL, null=True)
     variable_standardName = models.CharField(max_length=100)
 
+
 class VariableNERCStandard(models.Model):
     variable_nameVocabulary = models.ForeignKey(Vocabulary, on_delete=models.SET_NULL, null=True)
     variable_standardNameUrn = models.CharField(max_length=100)
     variable_standardNameUri = models.CharField(max_length=100)
 
+
 class UnitCFStandard(models.Model):
     variable_nameVocabulary = models.ForeignKey(Vocabulary, on_delete=models.SET_NULL, null=True)
     variable_unit = models.CharField(max_length=25)
+
 
 class UnitNERCStandard(models.Model):
     variable_nameVocabulary = models.ForeignKey(Vocabulary, on_delete=models.SET_NULL, null=True)
     variable_unitUrn = models.CharField(max_length=50)
     variable_unitUri = models.CharField(max_length=100)
+
 
 class Variable(models.Model):
     variable_parameterName = models.CharField(max_length=50)
@@ -175,6 +179,7 @@ class ArgosTagSerialNumber(models.Model):
 class Vessel(models.Model):
     vessel_name = models.CharField(max_length=50)
 
+
 class Mission(models.Model):
     mission_platformName = models.ForeignKey(PlatformName, on_delete=models.SET_NULL, null=True)
     mission_number = models.IntegerField()
@@ -212,11 +217,13 @@ class Mission(models.Model):
     mission_comments = models.CharField(max_length=300)
     mission_summary = models.CharField(max_length=1200, null=True)
 
+
 class InstrumentMission(models.Model):
     instrument_mission = models.ForeignKey(Mission, on_delete=models.SET_NULL, null=True)
     instrument_calibration = models.ForeignKey(InstrumentCalibration, on_delete=models.SET_NULL, null=True)
     instrument_warmUp = models.CharField(max_length=20)
     instrument_samplingRate = models.CharField(max_length=20)
+
 
 class ContributorMission(models.Model):
     contributor_mission = models.ForeignKey(Mission, on_delete=models.SET_NULL, null=True)
