@@ -25,15 +25,18 @@ for row in mdf.itertuples():
     filename = 'deployment' + '_' + \
                'SEA' + getattr(row, 'serialNumber').strip('\"') + 'M00' + str(getattr(row, 'missionNumber')) + \
                 '.yml'
-    snCheck = getattr(row, 'serialNumber') == '"032"'
-    mnCheck = getattr(row, 'missionNumber') in [65, 60]
-    if snCheck & mnCheck:
-        timebase_sourceVariable = 'LEGATO_TEMPERATURE'  # not sure ?
-    else:
-        timebase_sourceVariable = 'GPCTD_TEMPERATURE'
+    # snCheck = getattr(row, 'serialNumber') == '"032"'
+    # mnCheck = getattr(row, 'missionNumber') in [65, 60]
+    # if snCheck & mnCheck:
+    #     timebase_sourceVariable = 'LEGATO_TEMPERATURE'  # not sure ?
+    # else:
+    #     timebase_sourceVariable = 'GPCTD_TEMPERATURE'
+    timebase_sourceVariable = 'NAV_LATITUDE'
     d.createPygliderIOOSyaml(platform_company='Alseamar',
                              platform_model='SeaExplorer',
                              platform_serial=getattr(row, 'serialNumber'),
                              mission_number=getattr(row, 'missionNumber'),
                              timebase_sourceVariable=timebase_sourceVariable,
+                             interpolate=False,
+                             add_keep_variables=True,
                              filename=filename)

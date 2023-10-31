@@ -15,6 +15,7 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                            mission_number,
                            timebase_sourceVariable,
                            interpolate=True,
+                           add_keep_variables=True,
                            filename="deployment.yml"):
     """
     :param platform_company: a string indicating the name of the company associated with the
@@ -25,6 +26,8 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
     :param timebase_sourceVariable: a string indicating which source variable to interpolate over,
            see pyglider fn blank for additional details
     :param interpolate: a logical value indicating if interpolation should be completed
+    :param add_keep_variables: a logical value indicating if keep_variables should be added. Right now,
+           it will see which instruments are on the glider, and pull one from each.
     :param filename: a string indicating the filename for the yml file that is output
     :return:
     """
@@ -99,7 +102,7 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
     # 5. Define variables dict, and add timebase and interpolate options
     netcdfVariablesDict = {}
     netcdfVariablesDict['timebase'] = dict(source=timebase_sourceVariable)
-    netcdfVariablesDict['interpolate'] = interpolate
+    netcdfVariablesDict['interpolate'] = interpolate # boolean values will appear as true/false, so not capitalized
     # 5. Get variable information based on the platform
     ipQ = models.PlatformVariable.objects.filter(platform_variablePlatformCompany = pcQ.first().pk)
     # select platform variables are used as the axis variables
@@ -203,51 +206,18 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
               f"into database.")
         return
 
-    # 7. Get variable information based on instruments
+    # 7. Do multiple things in this loop
+    #   a. Get variable information based on instruments
+    #   b. get 'glider_devices', this is specific to pyglider and not any file standard
+    #   c. get instrument information for 'profile_variables'
+    # things will not be extracted in that order, comments will be included below to make everything clear
     # add to netcdfVariablesDict
-    for instrument in iQ.iterator():
-        instrumentModel = instrument.instrument_calibration.instrument_calibrationSerial.instrument_serialNumberModel.pk
-        ivQ = models.InstrumentVariable.objects.filter(instrument_variablePlatformCompany=pcQ.first().pk,
-                                                       instrument_variableInstrumentModel=instrumentModel)
-        for instrumentVariable in ivQ.iterator():
-            # there are some variables that might be None, so define those if the are
-            if instrumentVariable.instrument_variableStandardName is None:
-                instrumentVariableDictName = instrumentVariable.instrument_variableSourceName
-                long_name = ''
-                standard_name = ''
-                units = instrumentVariable.instrument_variableSourceUnits
-            else:
-                instrumentVariableDictName = instrumentVariable.instrument_variableStandardName.variable_parameterName
-                # if there are more than 1 of the same parameter name (e.g. when 2 CTD's are on glider),
-                # add number to the dict name
-                if instrumentVariableDictName in list(netcdfVariablesDict.keys()):
-                    # find how many are in there
-                    nreps = [bool(re.search(instrumentVariableDictName, x)) for x in list(netcdfVariablesDict.keys())].count(
-                        True)
-                    # add number to the device name
-                    instrumentVariableDictName = instrumentVariableDictName + str((nreps + 1))
-                long_name = instrumentVariable.instrument_variableStandardName.variable_longName
-                # now have to go through each variable separately
-                if instrumentVariable.instrument_variableStandardName.variable_cfName is None:
-                    standard_name = ''
-                else:
-                    standard_name = instrumentVariable.instrument_variableStandardName.variable_cfName.variable_standardName
-                if instrumentVariable.instrument_variableStandardName.variable_cfUnit is None:
-                    units = ''
-                else:
-                    units = instrumentVariable.instrument_variableStandardName.variable_cfUnit.variable_unit
-                if instrumentVariableDictName == 'conductivity':
-                    units = 'mS cm-1' # same for both GPCTD and LEGATO, so OK for now
-            netcdfVariablesDict[instrumentVariableDictName] = dict(source=instrumentVariable.instrument_variableSourceName,
-                                                                       coordinates='time depth latitude longitude',
-                                                                       long_name=long_name,
-                                                                       standard_name=standard_name,
-                                                                       units=units)
-    # 8. get 'glider_devices', this is specific to pyglider and not any file standard
-    #    it's essentially just information on the instruments
+    # pull out one variable from each instrument for keepVariables
     gliderDeviceDict = {}
     profileVariablesDict = {} # need to add glider devices to profileVariableDict as well
+    keepVariables = []
     for instrument in iQ.iterator():
+        # get glider_devices and instrument types for profile_variables
         i = instrument.instrument_calibration # this is just to make the below a bit easier
         # gliderDeviceName (this is the type)
         gliderDeviceDictName = i.instrument_calibrationSerial.instrument_serialNumberModel.instrument_modelType.instrument_type
@@ -286,7 +256,7 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
         calibration_report = i.instrument_calibrationReport
         if calibration_report is None:
             calibration_report = ''
-        # set dict
+        # set dict for glider devices and instrument variables for profile variables
         gliderDeviceDict[gliderDeviceDictName] = dict(make=make,
                                                       model=model,
                                                       serial=serial,
@@ -303,7 +273,54 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                                                       factory_calibrated=factory_calibrated,
                                                       calibration_date=calibration_date,
                                                       calibration_report=calibration_report)
+        # get instrument variables
+        instrumentModel = instrument.instrument_calibration.instrument_calibrationSerial.instrument_serialNumberModel.pk
+        ivQ = models.InstrumentVariable.objects.filter(instrument_variablePlatformCompany=pcQ.first().pk,
+                                                       instrument_variableInstrumentModel=instrumentModel)
+        for instrumentVariable in ivQ.iterator():
+            # there are some variables that might be None, so define those if the are
+            if instrumentVariable.instrument_variableStandardName is None:
+                instrumentVariableDictName = instrumentVariable.instrument_variableSourceName
+                long_name = ''
+                standard_name = ''
+                units = instrumentVariable.instrument_variableSourceUnits
+            else:
+                instrumentVariableDictName = instrumentVariable.instrument_variableStandardName.variable_parameterName
+                # if there are more than 1 of the same parameter name (e.g. when 2 CTD's are on glider),
+                # add number to the dict name
+                if instrumentVariableDictName in list(netcdfVariablesDict.keys()):
+                    # find how many are in there
+                    nreps = [bool(re.search(instrumentVariableDictName, x)) for x in list(netcdfVariablesDict.keys())].count(
+                        True)
+                    # add number to the device name
+                    instrumentVariableDictName = instrumentVariableDictName + str((nreps + 1))
+                long_name = instrumentVariable.instrument_variableStandardName.variable_longName
+                # now have to go through each variable separately
+                if instrumentVariable.instrument_variableStandardName.variable_cfName is None:
+                    standard_name = ''
+                else:
+                    standard_name = instrumentVariable.instrument_variableStandardName.variable_cfName.variable_standardName
+                if instrumentVariable.instrument_variableStandardName.variable_cfUnit is None:
+                    units = ''
+                else:
+                    units = instrumentVariable.instrument_variableStandardName.variable_cfUnit.variable_unit
+                if instrumentVariableDictName == 'conductivity':
+                    units = 'mS cm-1' # same for both GPCTD and LEGATO, so OK for now
+            netcdfVariablesDict[instrumentVariableDictName] = dict(source=instrumentVariable.instrument_variableSourceName,
+                                                                   coordinates='time depth latitude longitude',
+                                                                   long_name=long_name,
+                                                                   standard_name=standard_name,
+                                                                   units=units,
+                                                                   instrument=profileVariablesDictName)
+            # save one variable from each instrument, bt the trick here is I need to save the instrumentVariableDictName
+            if instrumentVariable.instrument_variableSourceName == ivQ.first().instrument_variableSourceName:
+                print(f"Saving {instrumentVariableDictName} to keepVariables")
+                keepVariables.append(instrumentVariableDictName)
 
+    # put keepVariables in netcdf_variables
+    if add_keep_variables:
+        #netcdfVariablesDict['keep_variables']='[' + ', '.join(keepVariables) + ']'
+        netcdfVariablesDict['keep_variables']=keepVariables
     # fake 'pressure' sensor for now
     gliderDeviceDict['pressure'] = dict(make='Micron',
                                         model='Pressure',
