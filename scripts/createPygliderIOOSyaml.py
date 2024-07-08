@@ -11,6 +11,7 @@ mission_number = 51
 timebase_sourceVariable = 'GPCTD_TEMPERATURE'
 interpolate = True
 
+
 def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                            mission_number,
                            timebase_sourceVariable,
@@ -37,20 +38,22 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
     pcQ = models.PlatformCompany.objects.filter(platform_company=platform_company,
                                                 platform_model=platform_model)
     #   a. check that the pcQ Query set is not empty, if it is, give message on options for next steps for user
-    if not(pcQ.exists()):
+    if not (pcQ.exists()):
         # check the platform_company provided, does it exist in the database ?
         pcCheckQ = models.PlatformCompany.objects.filter(platform_company=platform_company)
-        if not(pcCheckQ.exists()):
+        if not (pcCheckQ.exists()):
             print(f"Unable to find match in database for platform_company: {platform_company}")
-            print(f"These are the current instances in the database: {models.PlatformCompany.objects.values('platform_company')}")
+            print(
+                f"These are the current instances in the database: {models.PlatformCompany.objects.values('platform_company')}")
             print(f"If the desired platform_company is not in the database, please contact the developer.")
         else:
             print(f"Valid platform_company provided.")
         # check the platform_model provided, does it exists in the database ?
         pmCheckQ = models.PlatformCompany.objects.filter(platform_model=platform_model)
-        if not(pmCheckQ.exists()):
+        if not (pmCheckQ.exists()):
             print(f"Unable to find match in database for platform_model: {platform_model}")
-            print(f"These are the current instances in the database: {models.PlatformCompany.objects.values('platform_model')}")
+            print(
+                f"These are the current instances in the database: {models.PlatformCompany.objects.values('platform_model')}")
             print(f"If the desired platform_model is not in the database, please contact the developer.")
         else:
             print(f"Valid platform_model provided.")
@@ -63,7 +66,7 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
     psQ = models.PlatformName.objects.filter(platform_companyId=pcQ.first().pk,
                                              platform_serial=platform_serial)
     #    a. check that psQ Query set is not empty, if it is, give message on options for next steps for user
-    if not(psQ.exists()):
+    if not (psQ.exists()):
         # print out options of the serialNumbers for the given platform_companyId already found.
         pcmCheckQ = models.PlatformName.objects.filter(platform_companyId=pcQ.first().pk)
         print(f"Unable to find Query match for platform_serial {platform_serial}"
@@ -75,7 +78,7 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
     mQ = models.Mission.objects.filter(mission_platformName=psQ.first().pk,
                                        mission_number=mission_number)
     #    a. check that mQ Query set is not empty, if it is, print a message
-    if not(mQ.exists()):
+    if not (mQ.exists()):
         print(f"No mission entry for glider with serial number {platform_serial} and"
               f"mission {mission_number} in database. Please contact developer or enter information"
               f"into database.")
@@ -84,8 +87,8 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
         return
 
     # 4. Get contributor information
-    cQ = models.ContributorMission.objects.filter(contributor_mission = mQ.first().pk)
-    if not(cQ.exists()):
+    cQ = models.ContributorMission.objects.filter(contributor_mission=mQ.first().pk)
+    if not (cQ.exists()):
         print(f"No contributor entries for glider with serial number {platform_serial} and"
               f"mission {mission_number} in database. Please contact developer or enter information"
               f"into database.")
@@ -95,22 +98,22 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
     allContributorRoles = []
     for item in cQ.iterator():
         allContributorNames.append(item.contributor_missionPerson.contributor_firstName +
-                               ' ' +
-                               item.contributor_missionPerson.contributor_lastName)
+                                   ' ' +
+                                   item.contributor_missionPerson.contributor_lastName)
         allContributorRoles.append(item.contributor_missionRole.contributor_role)
 
     # 5. Define variables dict, and add timebase and interpolate options
     netcdfVariablesDict = {}
     netcdfVariablesDict['timebase'] = dict(source=timebase_sourceVariable)
-    netcdfVariablesDict['interpolate'] = interpolate # boolean values will appear as true/false, so not capitalized
+    netcdfVariablesDict['interpolate'] = interpolate  # boolean values will appear as true/false, so not capitalized
     # 5. Get variable information based on the platform
-    ipQ = models.PlatformVariable.objects.filter(platform_variablePlatformCompany = pcQ.first().pk)
+    ipQ = models.PlatformVariable.objects.filter(platform_variablePlatformCompany=pcQ.first().pk)
     # select platform variables are used as the axis variables
     # make a separate dict for those
     # identify them based on platform company
     # in the future I might have to treat them even more special than what is done below
 
-    if(pcQ.first().platform_company == 'Alseamar'):
+    if (pcQ.first().platform_company == 'Alseamar'):
         coordinateSourceVariables = ['Timestamp',
                                      'NAV_LONGITUDE',
                                      'NAV_LATITUDE']
@@ -134,13 +137,26 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                 long_name = ipcvQ.platform_variableStandardName.variable_longName
                 standard_name = ipcvQ.platform_variableStandardName.variable_cfName.variable_standardName
                 units = ipcvQ.platform_variableStandardName.variable_cfUnit.variable_unit
-            netcdfVariablesDict[standard_name] = dict(
-                source=ipcvQ.platform_variableSourceName,
-                axis=getattr(row, 'axisVariable'),
-                long_name=long_name,
-                standard_name=standard_name,
-                units=units
-            )
+            if getattr(row, 'sourceVariable') in ['NAV_LATITUDE', 'NAV_LONGITUDE']:
+                netcdfVariablesDict[standard_name] = dict(
+                    source=ipcvQ.platform_variableSourceName,
+                    axis=getattr(row, 'axisVariable'),
+                    long_name=long_name,
+                    standard_name=standard_name,
+                    units=units,
+                    conversion='nmea2deg', # required for SX
+                    reference='WGS84',
+                    coordinate_reference_frame='urn: ogc:crs: EPSG::4326'
+                )
+            else:
+                netcdfVariablesDict[standard_name] = dict(
+                    source=ipcvQ.platform_variableSourceName,
+                    axis=getattr(row, 'axisVariable'),
+                    long_name=long_name,
+                    standard_name=standard_name,
+                    units=units
+                )
+
 
     skipVars = ['NAV_MISSIONID', 'NAV_NUMBEROFYO', 'PLD_REALTIMECLOCK', 'Temperature']
     # some variables did not exist for certain navigation firmware versions
@@ -157,17 +173,16 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
     for i in range(max(len(navFirmware), len(deadReckFirmware))):
         nf = navFirmware[i] if i < len(navFirmware) else 0
         drf = deadReckFirmware[i] if i < len(deadReckFirmware) else 0
-        if nf == drf and i == (max(len(navFirmware), len(deadReckFirmware))-1):
-            skipDeadReck = False # all three digits the same
+        if nf == drf and i == (max(len(navFirmware), len(deadReckFirmware)) - 1):
+            skipDeadReck = False  # all three digits the same
         elif nf == drf:
-            continue # go to next index
+            continue  # go to next index
         elif nf > drf:
             skipDeadReck = False
-            break # once a number is greater than deadReckoning, exit
+            break  # once a number is greater than deadReckoning, exit
         elif nf < drf:
             skipDeadReck = True
-            break # once a number is less than deadReckoning, exit
-
+            break  # once a number is less than deadReckoning, exit
 
     if skipDeadReck:
         print(f"skipping DeadReckoning")
@@ -200,7 +215,7 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
     # 6. Get mission instrument information
     iQ = models.InstrumentMission.objects.filter(instrument_mission=mQ.first().pk)
     #    a. check that iQ Query set is not empty, if it is, print a message
-    if not(iQ.exists()):
+    if not (iQ.exists()):
         print(f"No instrument entries for glider with serial number {platform_serial} and"
               f"mission {mission_number} in database. Please contact developer or enter information"
               f"into database.")
@@ -214,11 +229,11 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
     # add to netcdfVariablesDict
     # pull out one variable from each instrument for keepVariables
     gliderDeviceDict = {}
-    profileVariablesDict = {} # need to add glider devices to profileVariableDict as well
+    profileVariablesDict = {}  # need to add glider devices to profileVariableDict as well
     keepVariables = []
     for instrument in iQ.iterator():
         # get glider_devices and instrument types for profile_variables
-        i = instrument.instrument_calibration # this is just to make the below a bit easier
+        i = instrument.instrument_calibration  # this is just to make the below a bit easier
         # gliderDeviceName (this is the type)
         gliderDeviceDictName = i.instrument_calibrationSerial.instrument_serialNumberModel.instrument_modelType.instrument_type
         # if there are more than 1 type of instrument, add number to the dict name
@@ -251,7 +266,7 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
         if calibration_date is None:
             calibration_date = ''
         else:
-            calibration_date=calibration_date.isoformat()
+            calibration_date = calibration_date.isoformat()
         # calibration_report
         calibration_report = i.instrument_calibrationReport
         if calibration_report is None:
@@ -266,13 +281,13 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                                                       calibration_date=calibration_date,
                                                       calibration_report=calibration_report)
         profileVariablesDict[profileVariablesDictName] = dict(make=make,
-                                                      model=model,
-                                                      serial=serial,
-                                                      long_name=long_name,
-                                                      make_model=make_model,
-                                                      factory_calibrated=factory_calibrated,
-                                                      calibration_date=calibration_date,
-                                                      calibration_report=calibration_report)
+                                                              model=model,
+                                                              serial=serial,
+                                                              long_name=long_name,
+                                                              make_model=make_model,
+                                                              factory_calibrated=factory_calibrated,
+                                                              calibration_date=calibration_date,
+                                                              calibration_report=calibration_report)
         # get instrument variables
         instrumentModel = instrument.instrument_calibration.instrument_calibrationSerial.instrument_serialNumberModel.pk
         ivQ = models.InstrumentVariable.objects.filter(instrument_variablePlatformCompany=pcQ.first().pk,
@@ -290,7 +305,8 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                 # add number to the dict name
                 if instrumentVariableDictName in list(netcdfVariablesDict.keys()):
                     # find how many are in there
-                    nreps = [bool(re.search(instrumentVariableDictName, x)) for x in list(netcdfVariablesDict.keys())].count(
+                    nreps = [bool(re.search(instrumentVariableDictName, x)) for x in
+                             list(netcdfVariablesDict.keys())].count(
                         True)
                     # add number to the device name
                     instrumentVariableDictName = instrumentVariableDictName + str((nreps + 1))
@@ -305,13 +321,14 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                 else:
                     units = instrumentVariable.instrument_variableStandardName.variable_cfUnit.variable_unit
                 if instrumentVariableDictName == 'conductivity':
-                    units = 'mS cm-1' # same for both GPCTD and LEGATO, so OK for now
-            netcdfVariablesDict[instrumentVariableDictName] = dict(source=instrumentVariable.instrument_variableSourceName,
-                                                                   coordinates='time depth latitude longitude',
-                                                                   long_name=long_name,
-                                                                   standard_name=standard_name,
-                                                                   units=units,
-                                                                   instrument=profileVariablesDictName)
+                    units = 'S m-1'  # GPCTD, is LEGATO 'mS cm-1' ?
+            netcdfVariablesDict[instrumentVariableDictName] = dict(
+                source=instrumentVariable.instrument_variableSourceName,
+                coordinates='time depth latitude longitude',
+                long_name=long_name,
+                standard_name=standard_name,
+                units=units,
+                instrument=profileVariablesDictName)
             # save one variable from each instrument, bt the trick here is I need to save the instrumentVariableDictName
             if instrumentVariable.instrument_variableSourceName == ivQ.first().instrument_variableSourceName:
                 print(f"Saving {instrumentVariableDictName} to keepVariables")
@@ -319,8 +336,8 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
 
     # put keepVariables in netcdf_variables
     if add_keep_variables:
-        #netcdfVariablesDict['keep_variables']='[' + ', '.join(keepVariables) + ']'
-        netcdfVariablesDict['keep_variables']=keepVariables
+        # netcdfVariablesDict['keep_variables']='[' + ', '.join(keepVariables) + ']'
+        netcdfVariablesDict['keep_variables'] = keepVariables
     # fake 'pressure' sensor for now
     gliderDeviceDict['pressure'] = dict(make='Micron',
                                         model='Pressure',
@@ -346,7 +363,7 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
             units = ''
         else:
             units = profileVar.variable_cfUnit.variable_unit
-        if profileVarDictName == 'profile_time': # no units for profile_time
+        if profileVarDictName == 'profile_time':  # no units for profile_time
             profileVariablesDict[profileVarDictName] = dict(long_name=long_name,
                                                             standard_name=standard_name)
         else:
@@ -369,7 +386,9 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                         creator_url='',
                         data_mode='P',
                         deployment_id=mQ.first().mission_number,
-                        deployment_name='dfo' + '-' + psQ.first().platform_name + psQ.first().platform_serial.replace('"', '') + '-' + mQ.first().mission_deploymentDate.strftime('%Y%m%d'),  # institute (dfo) - gliderName + gliderSerial - deploymentDate
+                        deployment_name='dfo' + '-' + psQ.first().platform_name + psQ.first().platform_serial.replace(
+                            '"', '') + '-' + mQ.first().mission_deploymentDate.strftime('%Y%m%d'),
+                        # institute (dfo) - gliderName + gliderSerial - deploymentDate
                         deployment_start=mQ.first().mission_deploymentDate,
                         deployment_end=mQ.first().mission_recoveryDate,
                         format_version='',
@@ -378,7 +397,7 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                         glider_model=pcQ.first().platform_model,
                         glider_instrument_name=pcQ.first().platform_model,  # check this
                         glider_wmo=psQ.first().platform_wmo,
-                        wmo_id=psQ.first().platform_wmo,   # pyglider specific
+                        wmo_id=psQ.first().platform_wmo,  # pyglider specific
                         institution='',
                         keywords='',
                         keywords_vocabulary='',
