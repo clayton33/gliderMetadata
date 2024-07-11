@@ -1,0 +1,3 @@
+parameterName,longName,nameComment,cfStandardName,nercParameterUrn,nercParameterUri,cfUnit,nercUnitUrn,nercUnitUri
+profile_time_start,Profile Start Time,ioos,,,,,,
+profile_time_end,Profile End Time,ioos,,,,,,
