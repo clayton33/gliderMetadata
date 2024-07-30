@@ -37,7 +37,7 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
     :param add_keep_variables: a logical value indicating if keep_variables should be added. Right now,
            it will see which instruments are on the glider, and pull one from each.
     :param subset_navigationVariables: a boolean value indicating if a subset of the ancillary navigation variables
-           should only be included in the output. These variables include pitch, roll, and heading.
+           should only be included in the output. These variables include pitch, roll, and heading. Default is True.
     :param filename: a string indicating the filename for the yml file that is output
     :return:
     """
@@ -196,7 +196,7 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
     if skipDeadReck:
         print(f"skipping DeadReckoning")
         skipVars.append('DeadReckoning')
-
+    keepNavVars = ['Pitch', 'Roll', 'Heading'] # fragile ?
     for platformVariable in ipQ:
         platformVariableDictName = platformVariable.platform_variableSourceName
         if platformVariableDictName in coordinateSourceVariables:
@@ -206,6 +206,12 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
         if platformVariableDictName in skipVars:
             print(f"{platformVariableDictName} isn't an actual variable in the files, continuing to next variable")
             continue
+        # check subset_navigationVariables
+        if subset_navigationVariables:
+            if platformVariableDictName not in keepNavVars:
+                print(f"subset_navigationVariables is True, {platformVariableDictName} is not one of the retained "
+                      f"variables, continuing to next variable.")
+                continue
         if platformVariable.platform_variableStandardName is None:
             long_name = ''
             standard_name = ''
