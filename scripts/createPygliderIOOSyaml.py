@@ -6,17 +6,24 @@ from gliderMetadataApp import models
 # for testing/debug
 platform_company = 'Alseamar'
 platform_model = 'SeaExplorer'
-platform_serial = '"032"'
-mission_number = 51
+platform_serial = '"022"'
+mission_number = 66
 timebase_sourceVariable = 'GPCTD_TEMPERATURE'
 interpolate = True
+add_keep_variables=True
 
+# to reduce anchors/aliases in yaml output file
+# found on https://ttl255.com/yaml-anchors-and-aliases-and-how-to-disable-them/
+class NoAliasDumper(yaml.SafeDumper):
+    def ignore_aliases(self, data):
+        return True
 
 def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                            mission_number,
                            timebase_sourceVariable,
                            interpolate=True,
                            add_keep_variables=True,
+                           subset_navigationVariables=True,
                            filename="deployment.yml"):
     """
     :param platform_company: a string indicating the name of the company associated with the
@@ -29,6 +36,8 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
     :param interpolate: a logical value indicating if interpolation should be completed
     :param add_keep_variables: a logical value indicating if keep_variables should be added. Right now,
            it will see which instruments are on the glider, and pull one from each.
+    :param subset_navigationVariables: a boolean value indicating if a subset of the ancillary navigation variables
+           should only be included in the output. These variables include pitch, roll, and heading.
     :param filename: a string indicating the filename for the yml file that is output
     :return:
     """
@@ -271,6 +280,19 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
         calibration_report = i.instrument_calibrationReport
         if calibration_report is None:
             calibration_report = ''
+        # calibration coefficients (if applicable) 20240730, only Sea-Bird 43F
+        if make == 'Sea-Bird' and model == '43F':
+            # use calibration pk
+            ccQ = models.InstrumentSeabird43FOxygenCalibrationCoefficients.objects.get(calibrationSeaBird43F_calibration=i.pk)
+            calibration_coefficients = dict(Soc=float(ccQ.calibrationSeaBird43F_Soc),
+                                            Foffset=float(ccQ.calibrationSeaBird43F_Foffset),
+                                            Tau20=float(ccQ.calibrationSeaBird43F_Tau20),
+                                            A=float(ccQ.calibrationSeaBird43F_A),
+                                            B=float(ccQ.calibrationSeaBird43F_B),
+                                            C=float(ccQ.calibrationSeaBird43F_C),
+                                            Enom=float(ccQ.calibrationSeaBird43F_Enom))
+        else:
+            calibration_coefficients = ''
         # set dict for glider devices and instrument variables for profile variables
         gliderDeviceDict[gliderDeviceDictName] = dict(make=make,
                                                       model=model,
@@ -279,7 +301,8 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                                                       make_model=make_model,
                                                       factory_calibrated=factory_calibrated,
                                                       calibration_date=calibration_date,
-                                                      calibration_report=calibration_report)
+                                                      calibration_report=calibration_report,
+                                                      calibration_coefficients=calibration_coefficients)
         profileVariablesDict[profileVariablesDictName] = dict(make=make,
                                                               model=model,
                                                               serial=serial,
@@ -287,7 +310,8 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                                                               make_model=make_model,
                                                               factory_calibrated=factory_calibrated,
                                                               calibration_date=calibration_date,
-                                                              calibration_report=calibration_report)
+                                                              calibration_report=calibration_report,
+                                                              calibration_coefficients=calibration_coefficients)
         # get instrument variables
         instrumentModel = instrument.instrument_calibration.instrument_calibrationSerial.instrument_serialNumberModel.pk
         ivQ = models.InstrumentVariable.objects.filter(instrument_variablePlatformCompany=pcQ.first().pk,
@@ -366,6 +390,13 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
         if profileVarDictName == 'profile_time':  # no units for profile_time
             profileVariablesDict[profileVarDictName] = dict(long_name=long_name,
                                                             standard_name=standard_name)
+        elif profileVarDictName == 'profile_id': # valid_min and valid_max
+            profileVariablesDict[profileVarDictName] = dict(long_name=long_name,
+                                                           standard_name=standard_name,
+                                                           units=units,
+                                                           valid_min=1, # copied from a cproof slocum yaml
+                                                           valid_max=2147483647 # copied from a cproof slocum yaml
+                                                            )
         else:
             profileVariablesDict[profileVarDictName] = dict(long_name=long_name,
                                                             standard_name=standard_name,
@@ -431,4 +462,4 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
     outDict['profile_variables'] = profileVariablesDict
 
     with open(filename, 'w') as yaml_file:
-        yaml.dump(outDict, yaml_file, default_flow_style=False)
+        yaml.dump(outDict, yaml_file, default_flow_style=False, Dumper=NoAliasDumper)

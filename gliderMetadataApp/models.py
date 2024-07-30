@@ -102,6 +102,16 @@ class InstrumentCalibration(models.Model):
     instrument_calibrationDateNotes = models.CharField(max_length=50, null=True)
 
 
+class InstrumentSeabird43FOxygenCalibrationCoefficients(models.Model):
+    calibrationSeaBird43F_calibration = models.ForeignKey(InstrumentCalibration, on_delete=models.SET_NULL, null = True)
+    calibrationSeaBird43F_Soc = models.DecimalField(max_digits=10, decimal_places=8)
+    calibrationSeaBird43F_Foffset = models.DecimalField(max_digits=6, decimal_places=2)
+    calibrationSeaBird43F_Tau20 = models.DecimalField(max_digits=4, decimal_places=2)
+    calibrationSeaBird43F_A = models.DecimalField(max_digits=7, decimal_places=5)
+    calibrationSeaBird43F_B = models.DecimalField(max_digits=8, decimal_places=6)
+    calibrationSeaBird43F_C = models.DecimalField(max_digits=12, decimal_places=10)
+    calibrationSeaBird43F_Enom = models.DecimalField(max_digits=5, decimal_places=3)
+
 class ContributorPeople(models.Model):
     contributor_lastName = models.CharField(max_length=50)
     contributor_firstName = models.CharField(max_length=50)
