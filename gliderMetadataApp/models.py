@@ -129,9 +129,12 @@ class VariableCFStandard(models.Model):
 
 
 class VariableNERCStandard(models.Model):
-    variable_nameVocabulary = models.ForeignKey(Vocabulary, on_delete=models.SET_NULL, null=True)
-    variable_standardNameUrn = models.CharField(max_length=100)
-    variable_standardNameUri = models.CharField(max_length=100)
+    variable_nerc_variableName = models.CharField(max_length=100, null=True)
+    variable_nerc_variableLongName = models.CharField(max_length=200, null=True)
+    variable_nerc_variableVocabulary = models.CharField(max_length=100, null=True)
+    variable_nerc_unit = models.CharField(max_length=50, null=True)
+    variable_nerc_unitLongName = models.CharField(max_length=100, null=True)
+    variable_nerc_unitVocabulary = models.CharField(max_length=100, null=True)
 
 
 class UnitCFStandard(models.Model):
@@ -139,33 +142,29 @@ class UnitCFStandard(models.Model):
     variable_unit = models.CharField(max_length=25)
 
 
-class UnitNERCStandard(models.Model):
-    variable_nameVocabulary = models.ForeignKey(Vocabulary, on_delete=models.SET_NULL, null=True)
-    variable_unitUrn = models.CharField(max_length=50)
-    variable_unitUri = models.CharField(max_length=100)
-
-
 class Variable(models.Model):
     variable_parameterName = models.CharField(max_length=50)
     variable_longName = models.CharField(max_length=75)
     variable_parameterNameComment = models.CharField(max_length=50, null=True)
     variable_cfName = models.ForeignKey(VariableCFStandard, on_delete=models.SET_NULL, null=True)
-    variable_nercName = models.ForeignKey(VariableNERCStandard, on_delete=models.SET_NULL, null=True)
     variable_cfUnit = models.ForeignKey(UnitCFStandard, on_delete=models.SET_NULL, null=True)
-    variable_nercUnit = models.ForeignKey(UnitNERCStandard, on_delete=models.SET_NULL, null=True)
+    variable_nercName = models.ForeignKey(VariableNERCStandard, on_delete=models.SET_NULL, null=True)
 
 
 class InstrumentVariable(models.Model):
     instrument_variablePlatformCompany = models.ForeignKey(PlatformCompany, on_delete=models.SET_NULL, null=True)
     instrument_variableInstrumentModel = models.ForeignKey(InstrumentModel, on_delete=models.SET_NULL, null=True)
-    instrument_variableStandardName = models.ForeignKey(Variable, on_delete=models.SET_NULL, null=True)
+   # instrument_variableStandardName = models.ForeignKey(Variable, on_delete=models.SET_NULL, null=True)
+    instrument_nercVariable = models.ForeignKey(VariableNERCStandard, on_delete=models.SET_NULL, null=True)
+    instrument_cfVariable = models.ForeignKey(VariableCFStandard, on_delete=models.SET_NULL, null=True)
     instrument_variableSourceName = models.CharField(max_length=50)
     instrument_variableSourceUnits = models.CharField(max_length=50, null=True)
 
 
 class PlatformVariable(models.Model):
     platform_variablePlatformCompany = models.ForeignKey(PlatformCompany, on_delete=models.SET_NULL, null=True)
-    platform_variableStandardName = models.ForeignKey(Variable, on_delete=models.SET_NULL, null=True)
+    platform_nercVariable = models.ForeignKey(VariableNERCStandard, on_delete=models.SET_NULL, null=True)
+    platform_cfVariable = models.ForeignKey(VariableCFStandard, on_delete=models.SET_NULL, null=True)
     platform_variableSourceName = models.CharField(max_length=50)
     platform_variableSourceUnits = models.CharField(max_length=50, null=True)
 
