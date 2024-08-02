@@ -121,7 +121,6 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
     # make a separate dict for those
     # identify them based on platform company
     # in the future I might have to treat them even more special than what is done below
-
     if (pcQ.first().platform_company == 'Alseamar'):
         coordinateSourceVariables = ['Timestamp',
                                      'NAV_LONGITUDE',
@@ -143,9 +142,9 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                 standard_name = 'time'
                 units = 'seconds since 1970-01-01T00:00:00Z'
             else:
-                long_name = ipcvQ.platform_variableStandardName.variable_longName
-                standard_name = ipcvQ.platform_variableStandardName.variable_cfName.variable_standardName
-                units = ipcvQ.platform_variableStandardName.variable_cfUnit.variable_unit
+                long_name = ipcvQ.platform_nercVariable.variable_nerc_variableLongName
+                standard_name = ipcvQ.platform_cfVariable.variable_standardName
+                units = ipcvQ.platform_nercVariable.variable_nerc_unit
             if getattr(row, 'sourceVariable') in ['NAV_LATITUDE', 'NAV_LONGITUDE']:
                 netcdfVariablesDict[standard_name] = dict(
                     source=ipcvQ.platform_variableSourceName,
@@ -165,8 +164,6 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                     standard_name=standard_name,
                     units=units
                 )
-
-
     skipVars = ['NAV_MISSIONID', 'NAV_NUMBEROFYO', 'PLD_REALTIMECLOCK', 'Temperature']
     # some variables did not exist for certain navigation firmware versions
     navFirmware = mQ.first().mission_platformNavFirmware.platform_navFirmwareVersion
@@ -197,35 +194,61 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
         print(f"skipping DeadReckoning")
         skipVars.append('DeadReckoning')
     keepNavVars = ['Pitch', 'Roll', 'Heading'] # fragile ?
-    for platformVariable in ipQ:
-        platformVariableDictName = platformVariable.platform_variableSourceName
-        if platformVariableDictName in coordinateSourceVariables:
-            print(f"{platformVariableDictName}, is a coordinate variable, continuing to next variable")
+    for platformVariable in ipQ.iterator():
+        platformVariableSource = platformVariable.platform_variableSourceName
+        if platformVariableSource in coordinateSourceVariables:
+            print(f"{platformVariableSource}, is a coordinate variable, continuing to next variable")
             continue
         # some variables aren't actual variables (I don't think)
-        if platformVariableDictName in skipVars:
-            print(f"{platformVariableDictName} isn't an actual variable in the files, continuing to next variable")
+        if platformVariableSource in skipVars:
+            print(f"{platformVariableSource} isn't an actual variable in the files, continuing to next variable")
             continue
         # check subset_navigationVariables
         if subset_navigationVariables:
-            if platformVariableDictName not in keepNavVars:
-                print(f"subset_navigationVariables is True, {platformVariableDictName} is not one of the retained "
+            if platformVariableSource not in keepNavVars:
+                print(f"subset_navigationVariables is True, {platformVariableSource} is not one of the retained "
                       f"variables, continuing to next variable.")
                 continue
-        if platformVariable.platform_variableStandardName is None:
-            long_name = ''
-            standard_name = ''
+        # need to set things for variables,
+        #   dict name, which will be the variable name in the netCDF file, NERC primary, CF secondary, sourceName third
+        #   standard_name, which comes from the cf_convention
+        #   long_name, primary will be from NERC
+        #   units, primary will be from NERC, secondary will be default glider units
+        #   vocabulary, primary will be from NERC, secondary will be from CF, third will be None (glider defined)
+        #
+        # initialize all vars to reduce amount of elif statements
+        long_name = standard_name = vocabulary = units = unitsvocabulary = ''
+        # minimum case
+        if platformVariable.platform_nercVariable is None and platformVariable.platform_cfVariable is None:
+            platformVariableDictName = platformVariable.platform_variableSourceName
             units = platformVariable.platform_variableSourceUnits
-        else:
-            long_name = platformVariable.platform_variableStandardName.variable_longName
-            standard_name = platformVariable.platform_variableStandardName.variable_cfName.variable_standardName
-            units = platformVariable.platform_variableStandardName.variable_cfUnit.variable_unit
+        elif not(platformVariable.platform_nercVariable is None) and platformVariable.platform_cfVariable is None:
+            platformVariableDictName = platformVariable.platform_nercVariable.variable_nerc_variableName
+            long_name = platformVariable.platform_nercVariable.variable_nerc_variableLongName
+            vocabulary = platformVariable.platform_nercVariable.variable_nerc_variableVocabulary
+            units = platformVariable.platform_nercVariable.variable_nerc_unit
+            unitsvocabulary = platformVariable.platform_nercVariable.variable_nerc_unitVocabulary
+        elif platformVariable.platform_nercVariable is None and not(platformVariable.platform_cfVariable is None):
+            platformVariableDictName = platformVariable.platform_cfVariable.variable_standardName
+            vocabulary = platformVariable.platform_cfVariable.variable_nameVocabulary
+            units = platformVariable.platform_variableSourceUnits
+        else : # both are true, then we'll do the same as not(nerc is None) and cf is None
+            platformVariableDictName = platformVariable.platform_nercVariable.variable_nerc_variableName
+            long_name = platformVariable.platform_nercVariable.variable_nerc_variableLongName
+            vocabulary = platformVariable.platform_nercVariable.variable_nerc_variableVocabulary
+            units = platformVariable.platform_nercVariable.variable_nerc_unit
+            unitsvocabulary = platformVariable.platform_nercVariable.variable_nerc_unitVocabulary
+        # standard_name only comes from CF so set it here
+        if not(platformVariable.platform_cfVariable is None):
+            standard_name = platformVariable.platform_cfVariable.variable_standardName
         netcdfVariablesDict[platformVariableDictName] = dict(
             source=platformVariable.platform_variableSourceName,
             coordinates='time depth latitude longitude',
             long_name=long_name,
             standard_name=standard_name,
-            units=units)
+            vocabulary=vocabulary,
+            units=units,
+            unitsVocabulary=unitsvocabulary)
 
     # 6. Get mission instrument information
     iQ = models.InstrumentMission.objects.filter(instrument_mission=mQ.first().pk)
@@ -323,43 +346,63 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
         ivQ = models.InstrumentVariable.objects.filter(instrument_variablePlatformCompany=pcQ.first().pk,
                                                        instrument_variableInstrumentModel=instrumentModel)
         for instrumentVariable in ivQ.iterator():
-            # there are some variables that might be None, so define those if the are
-            if instrumentVariable.instrument_variableStandardName is None:
+            # if it is a '_COUNT' variable, omit for now, continue to next
+            if bool(re.search('_COUNT', instrumentVariable.instrument_variableSourceName)):
+                print(f"Variable is {instrumentVariable.instrument_variableSourceName}, omitting COUNT variable.")
+                continue
+            # same logic as parameterVariable, follow the same statements
+            # need to set things for variables,
+            #   dict name, which will be the variable name in the netCDF file, NERC primary, CF secondary, sourceName third
+            #   standard_name, which comes from the cf_convention
+            #   long_name, primary will be from NERC
+            #   units, primary will be from NERC, secondary will be default glider units
+            #   vocabulary, primary will be from NERC, secondary will be from CF, third will be None (glider defined)
+            #
+            # initialize all vars to reduce amount of elif statements
+            long_name = standard_name = vocabulary = units = unitsvocabulary = ''
+            # minimum case
+            if instrumentVariable.instrument_nercVariable is None and instrumentVariable.instrument_cfVariable is None:
                 instrumentVariableDictName = instrumentVariable.instrument_variableSourceName
-                long_name = ''
-                standard_name = ''
                 units = instrumentVariable.instrument_variableSourceUnits
-            else:
-                instrumentVariableDictName = instrumentVariable.instrument_variableStandardName.variable_parameterName
-                # if there are more than 1 of the same parameter name (e.g. when 2 CTD's are on glider),
-                # add number to the dict name
-                if instrumentVariableDictName in list(netcdfVariablesDict.keys()):
-                    # find how many are in there
-                    nreps = [bool(re.search(instrumentVariableDictName, x)) for x in
-                             list(netcdfVariablesDict.keys())].count(
-                        True)
-                    # add number to the device name
-                    instrumentVariableDictName = instrumentVariableDictName + str((nreps + 1))
-                long_name = instrumentVariable.instrument_variableStandardName.variable_longName
-                # now have to go through each variable separately
-                if instrumentVariable.instrument_variableStandardName.variable_cfName is None:
-                    standard_name = ''
-                else:
-                    standard_name = instrumentVariable.instrument_variableStandardName.variable_cfName.variable_standardName
-                if instrumentVariable.instrument_variableStandardName.variable_cfUnit is None:
-                    units = ''
-                else:
-                    units = instrumentVariable.instrument_variableStandardName.variable_cfUnit.variable_unit
-                if instrumentVariableDictName == 'conductivity':
-                    units = 'S m-1'  # GPCTD, is LEGATO 'mS cm-1' ?
+            elif not(instrumentVariable.instrument_nercVariable is None) and instrumentVariable.instrument_cfVariable is None:
+                instrumentVariableDictName = instrumentVariable.instrument_nercVariable.variable_nerc_variableName
+                long_name = instrumentVariable.instrument_nercVariable.variable_nerc_variableLongName
+                vocabulary = instrumentVariable.instrument_nercVariable.variable_nerc_variableVocabulary
+                units = instrumentVariable.instrument_nercVariable.variable_nerc_unit
+                unitsvocabulary = instrumentVariable.instrument_nercVariable.variable_nerc_unitVocabulary
+            elif instrumentVariable.instrument_nercVariable is None and not(instrumentVariable.instrument_cfVariable is None):
+                instrumentVariableDictName = instrumentVariable.instrument_cfVariable.variable_standardName
+                vocabulary = instrumentVariable.instrument_cfVariable.variable_nameVocabulary
+                units = instrumentVariable.instrument_variableSourceUnits
+            else : # both are true, then we'll do the same as not(nerc is None) and cf is None
+                instrumentVariableDictName = instrumentVariable.instrument_nercVariable.variable_nerc_variableName
+                long_name = instrumentVariable.instrument_nercVariable.variable_nerc_variableLongName
+                vocabulary = instrumentVariable.instrument_nercVariable.variable_nerc_variableVocabulary
+                units = instrumentVariable.instrument_nercVariable.variable_nerc_unit
+                unitsvocabulary = instrumentVariable.instrument_nercVariable.variable_nerc_unitVocabulary
+            # standard_name only comes from CF so set it here
+            if not (instrumentVariable.instrument_cfVariable is None):
+                standard_name = instrumentVariable.instrument_cfVariable.variable_standardName
+            # check if the dict name exists, if so, add a number to it.
+            if instrumentVariableDictName in list(netcdfVariablesDict.keys()):
+                # find how many are in there
+                nreps = [bool(re.search(instrumentVariableDictName, x)) for x in
+                         list(netcdfVariablesDict.keys())].count(
+                    True)
+                # add number to the device name
+                instrumentVariableDictName = instrumentVariableDictName + str((nreps + 1))
+            if instrumentVariableDictName == 'conductivity':
+                units = 'S m-1'  # GPCTD, is LEGATO 'mS cm-1' ?
             netcdfVariablesDict[instrumentVariableDictName] = dict(
                 source=instrumentVariable.instrument_variableSourceName,
                 coordinates='time depth latitude longitude',
                 long_name=long_name,
                 standard_name=standard_name,
                 units=units,
+                vocabulary = vocabulary,
+                unitsvocabulary = unitsvocabulary,
                 instrument=profileVariablesDictName)
-            # save one variable from each instrument, bt the trick here is I need to save the instrumentVariableDictName
+            # save one variable from each instrument, but the trick here is I need to save the instrumentVariableDictName
             if instrumentVariable.instrument_variableSourceName == ivQ.first().instrument_variableSourceName:
                 print(f"Saving {instrumentVariableDictName} to keepVariables")
                 keepVariables.append(instrumentVariableDictName)
@@ -369,14 +412,15 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
         # netcdfVariablesDict['keep_variables']='[' + ', '.join(keepVariables) + ']'
         netcdfVariablesDict['keep_variables'] = keepVariables
     # fake 'pressure' sensor for now
-    gliderDeviceDict['pressure'] = dict(make='Micron',
-                                        model='Pressure',
-                                        serial='',
-                                        long_name='',
-                                        make_model='',
-                                        factory_calibrated='',
-                                        calibration_date='',
-                                        calibration_report='')
+    # don't actually need this
+    # gliderDeviceDict['pressure'] = dict(make='Micron',
+    #                                     model='Pressure',
+    #                                     serial='',
+    #                                     long_name='',
+    #                                     make_model='',
+    #                                     factory_calibrated='',
+    #                                     calibration_date='',
+    #                                     calibration_report='')
 
     # 9. get profile variables for IOOS
     # note that initiation of the dict done before gliderDevices
