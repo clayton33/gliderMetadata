@@ -22,7 +22,14 @@ m = [['Timestamp', 'TIME', ''],
      #['LinCmd', '', ''],
      #['AngCmd', '', ''],
      #['AngPos', '', ''],
-     #['Voltage', '', '']
+     #['Voltage', '', ''],
+     ['Altitude', 'ALTITUDE', ''],
+     #['NAV_RESOURCE', '', ''],
+     #['NAV_MISSIONID', '', ''],
+     #['NAV_NUMBEROFYO', '', ''],
+     ['NAV_LONGITUDE', 'LONGITUDE', 'longitude'],
+     ['NAV_LATITUDE', 'LATITUDE', 'latitude'],
+     #['NAV_DEPTH', '', '']
      ]
 
 for var in m:

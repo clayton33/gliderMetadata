@@ -15,6 +15,8 @@ m = [['GPCTD_CONDUCTIVITY', 'CNDC', 'sea_water_electrical_conductivity'],
      ['FLBBCD_CHL_SCALED', 'FLUORESCENCE_CHLA', 'concentration_of_chlorophyll_in_sea_water'],
      #['FLBBCD_BB_700_COUNT', ''],
      ['FLBBCD_BB_700_SCALED', 'BBP700', ''],
+     #['FLBBCD_CDOM_COUNT', '', ''],
+     ['FLBBCD_CDOM_SCALED', 'CDOM', ''],
      #['MFLUV1_V1_COUNT', ''],
      #['MFLUV1_V2_COUNT', ''],
      #['MFLUV1_V3_COUNT', ''],
@@ -30,11 +32,16 @@ m = [['GPCTD_CONDUCTIVITY', 'CNDC', 'sea_water_electrical_conductivity'],
      #['PORPOISE_DISK_MOUNTED', ''],
      #['PORPOISE_DISKS_USAGE', ''],
      #['PORPOISE_DISKS_FULL', ''],
-     #['PORPOISE_SAMPLING_STATUS', '']
+     #['PORPOISE_SAMPLING_STATUS', ''],
+     #['PORPOISE_ACOUSTIC_RECORDING', '', ''],
+     ['LEGATO_CONDUCTIVITY', 'CNDC', 'sea_water_electrical_conductivity'],
+     ['LEGATO_TEMPERATURE', 'TEMP', 'sea_water_temperature'],
+     ['LEGATO_PRESSURE', 'PRES', 'sea_water_pressure'],
+     ['LEGATO_SALINITY', 'PSAL', 'sea_water_salinity']
      ]
 
 for var in m:
-    x = models.InstrumentVariable.objects.get(platform_variableSourceName = var[0])
+    x = models.InstrumentVariable.objects.get(instrument_variableSourceName = var[0])
     if not (len(var[1]) == 0):
         y = models.VariableNERCStandard.objects.get(variable_nerc_variableName=var[1])
         if not y is None:
