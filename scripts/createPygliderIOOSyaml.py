@@ -309,19 +309,7 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
         calibration_report = i.instrument_calibrationReport
         if calibration_report is None:
             calibration_report = ''
-        # calibration coefficients (if applicable) 20240730, only Sea-Bird 43F
-        if make == 'Sea-Bird' and model == '43F':
-            # use calibration pk
-            ccQ = models.InstrumentSeabird43FOxygenCalibrationCoefficients.objects.get(calibrationSeaBird43F_calibration=i.pk)
-            calibration_coefficients = dict(Soc=float(ccQ.calibrationSeaBird43F_Soc),
-                                            Foffset=float(ccQ.calibrationSeaBird43F_Foffset),
-                                            Tau20=float(ccQ.calibrationSeaBird43F_Tau20),
-                                            A=float(ccQ.calibrationSeaBird43F_A),
-                                            B=float(ccQ.calibrationSeaBird43F_B),
-                                            C=float(ccQ.calibrationSeaBird43F_C),
-                                            Enom=float(ccQ.calibrationSeaBird43F_Enom))
-        else:
-            calibration_coefficients = ''
+
         # set dict for glider devices and instrument variables for profile variables
         gliderDeviceDict[gliderDeviceDictName] = dict(make=make,
                                                       model=model,
@@ -330,8 +318,7 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                                                       make_model=make_model,
                                                       factory_calibrated=factory_calibrated,
                                                       calibration_date=calibration_date,
-                                                      calibration_report=calibration_report,
-                                                      calibration_coefficients=calibration_coefficients)
+                                                      calibration_report=calibration_report)
         profileVariablesDict[profileVariablesDictName] = dict(make=make,
                                                               model=model,
                                                               serial=serial,
@@ -339,8 +326,29 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                                                               make_model=make_model,
                                                               factory_calibrated=factory_calibrated,
                                                               calibration_date=calibration_date,
-                                                              calibration_report=calibration_report,
-                                                              calibration_coefficients=calibration_coefficients)
+                                                              calibration_report=calibration_report)
+        # calibration coefficients (if applicable) 20240730, only Sea-Bird 43F
+        if make == 'Sea-Bird' and model == '43F':
+            # use calibration pk
+            ccQ = models.InstrumentSeabird43FOxygenCalibrationCoefficients.objects.get(
+                calibrationSeaBird43F_calibration=i.pk)
+            calibration_coefficients = dict(Soc=float(ccQ.calibrationSeaBird43F_Soc),
+                                            Foffset=float(ccQ.calibrationSeaBird43F_Foffset),
+                                            Tau20=float(ccQ.calibrationSeaBird43F_Tau20),
+                                            A=float(ccQ.calibrationSeaBird43F_A),
+                                            B=float(ccQ.calibrationSeaBird43F_B),
+                                            C=float(ccQ.calibrationSeaBird43F_C),
+                                            Enom=float(ccQ.calibrationSeaBird43F_Enom))
+            calibration_sourceVars = dict(temperature='GPCTD_TEMP',
+                                          conductivity='GPCTD_CONDUCTIVITY',
+                                          pressure='GPCTD_PRESSURE')
+            # add to gliderDevice and profileVariable dict
+            gliderDeviceDict[gliderDeviceDictName].update(calibration_coefficients=calibration_coefficients,
+                                                          calibration_sourceVars=calibration_sourceVars)
+            profileVariablesDict[profileVariablesDictName].update(calibration_coefficients=calibration_coefficients,
+                                                                  calibration_sourceVars=calibration_sourceVars)
+
+
         # get instrument variables
         instrumentModel = instrument.instrument_calibration.instrument_calibrationSerial.instrument_serialNumberModel.pk
         ivQ = models.InstrumentVariable.objects.filter(instrument_variablePlatformCompany=pcQ.first().pk,
@@ -383,6 +391,20 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
             # standard_name only comes from CF so set it here
             if not (instrumentVariable.instrument_cfVariable is None):
                 standard_name = instrumentVariable.instrument_cfVariable.variable_standardName
+            # some variables need to be hard coded (for pyglider)
+            # they include: temperature, conductivity, and pressure
+            # (longitude, latitude, and time are as well, but they're coordinate vars)
+            # brute force it for now (if need be, i'll have to add slocum vars once I get there)
+            replaceName = None  # this is for hardcoding some names
+            if instrumentVariable.instrument_variableSourceName in ['GPCTD_TEMPERATURE', 'LEGATO_TEMPERATURE']:
+                replaceName = instrumentVariableDictName
+                instrumentVariableDictName = 'temperature'
+            if instrumentVariable.instrument_variableSourceName in ['GPCTD_CONDUCTIVITY', 'LEGATO_CONDUCTIVITY']:
+                replaceName = instrumentVariableDictName
+                instrumentVariableDictName = 'conductivity'
+            if instrumentVariable.instrument_variableSourceName in ['GPCTD_PRESSURE', 'LEGATO_PRESSURE']:
+                replaceName = instrumentVariableDictName
+                instrumentVariableDictName = 'pressure'
             # check if the dict name exists, if so, add a number to it.
             if instrumentVariableDictName in list(netcdfVariablesDict.keys()):
                 # find how many are in there
@@ -399,13 +421,18 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                 long_name=long_name,
                 standard_name=standard_name,
                 units=units,
-                vocabulary = vocabulary,
-                unitsvocabulary = unitsvocabulary,
+                vocabulary=vocabulary,
+                unitsvocabulary=unitsvocabulary,
                 instrument=profileVariablesDictName)
+            if not(replaceName is None):
+                netcdfVariablesDict[instrumentVariableDictName].update(replaceName=replaceName)
             # save one variable from each instrument, but the trick here is I need to save the instrumentVariableDictName
             if instrumentVariable.instrument_variableSourceName == ivQ.first().instrument_variableSourceName:
                 print(f"Saving {instrumentVariableDictName} to keepVariables")
                 keepVariables.append(instrumentVariableDictName)
+            # add conversion to GPCTD_DOF
+            if instrumentVariable.instrument_variableSourceName == 'GPCTD_DOF':
+                netcdfVariablesDict[instrumentVariableDictName].update(calculate_oxygenConcentration = 'sbe43Fhz2conc')
 
     # put keepVariables in netcdf_variables
     if add_keep_variables:
