@@ -119,7 +119,7 @@ class ContributorPeople(models.Model):
 
 
 class ContributorRole(models.Model):
-    contributor_vocabulary = models.ForeignKey(Vocabulary, on_delete=models.SET_NULL, null=True)
+    contributor_vocabulary = models.CharField(max_length=200)
     contributor_role = models.CharField(max_length=50)
 
 
@@ -225,6 +225,11 @@ class Mission(models.Model):
     mission_institute = models.ForeignKey(Institute, on_delete=models.SET_NULL, null=True)
     mission_comments = models.CharField(max_length=300)
     mission_summary = models.CharField(max_length=1200, null=True)
+    mission_contributingInstitutions = models.CharField(max_length=1000, null=True)
+    mission_contributingInstitutionVocabulary = models.CharField(max_length=1500, null=True)
+    mission_contributingInstitutionsRole = models.CharField(max_length=1000, null=True)
+    mission_contributingInstitutionsRoleVocabulary = models.CharField(max_length=1500, null=True)
+    mission_network = models.CharField(max_length=1500, null=True)
 
 
 class InstrumentMission(models.Model):

@@ -15,14 +15,14 @@ def initiate_ContributorPeople():
 
 
 def initiate_ContributorRole():
-    file = io.FileIO(file=r".\initializationData\contributor\contributorRole.csv", mode="r")
+    file = io.FileIO(file=r".\initializationData\contributor\W08Roles.csv", mode="r")
     df = pd.read_csv(file)
     for row in df.itertuples():
-        cr = models.ContributorRole(contributor_vocabulary = models.Vocabulary.objects.get(pk=getattr(row, 'contributor_vocabulary')),
-                                    contributor_role=getattr(row, "contributor_role"))
+        cr = models.ContributorRole(contributor_vocabulary = getattr(row, 'rolevocab'),
+                                    contributor_role=getattr(row, "role"))
         cr.save()
 
 
 
-initiate_ContributorPeople()
+#initiate_ContributorPeople()
 initiate_ContributorRole()

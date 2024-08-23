@@ -105,11 +105,13 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
     # get all the contributors out of the query
     allContributorNames = []
     allContributorRoles = []
+    allContributorVocabulary = []
     for item in cQ.iterator():
         allContributorNames.append(item.contributor_missionPerson.contributor_firstName +
                                    ' ' +
                                    item.contributor_missionPerson.contributor_lastName)
         allContributorRoles.append(item.contributor_missionRole.contributor_role)
+        allContributorVocabulary.append(item.contributor_missionRole.contributor_vocabulary)
 
     # 5. Define variables dict, and add timebase and interpolate options
     netcdfVariablesDict = {}
@@ -145,25 +147,27 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                 long_name = ipcvQ.platform_nercVariable.variable_nerc_variableLongName
                 standard_name = ipcvQ.platform_cfVariable.variable_standardName
                 units = ipcvQ.platform_nercVariable.variable_nerc_unit
+            netcdfVariablesDict[standard_name] = dict(
+                source=ipcvQ.platform_variableSourceName,
+                axis=getattr(row, 'axisVariable'),
+                long_name=long_name,
+                standard_name=standard_name,
+                units=units,
+                observation_type='measured' # everything that is output by the glider is considered measured
+            )
             if getattr(row, 'sourceVariable') in ['NAV_LATITUDE', 'NAV_LONGITUDE']:
-                netcdfVariablesDict[standard_name] = dict(
-                    source=ipcvQ.platform_variableSourceName,
-                    axis=getattr(row, 'axisVariable'),
-                    long_name=long_name,
-                    standard_name=standard_name,
-                    units=units,
+                netcdfVariablesDict[standard_name].update(
                     conversion='nmea2deg', # required for SX
                     reference='WGS84',
                     coordinate_reference_frame='urn: ogc:crs: EPSG::4326'
                 )
-            else:
-                netcdfVariablesDict[standard_name] = dict(
-                    source=ipcvQ.platform_variableSourceName,
-                    axis=getattr(row, 'axisVariable'),
-                    long_name=long_name,
-                    standard_name=standard_name,
-                    units=units
-                )
+            # add valid_[max,min] for latitude and longitude
+            if getattr(row, 'sourceVariable') in ['NAV_LONGITUDE']:
+                netcdfVariablesDict[standard_name].update(valid_max="180.00",
+                                                          valid_min="-180.00")
+            if getattr(row, 'sourceVariable') in ['NAV_LATITUDE']:
+                netcdfVariablesDict[standard_name].update(valid_max="90.00",
+                                                          valid_min="-90.00")
     skipVars = ['NAV_MISSIONID', 'NAV_NUMBEROFYO', 'PLD_REALTIMECLOCK', 'Temperature']
     # some variables did not exist for certain navigation firmware versions
     navFirmware = mQ.first().mission_platformNavFirmware.platform_navFirmwareVersion
@@ -248,7 +252,9 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
             standard_name=standard_name,
             vocabulary=vocabulary,
             units=units,
-            unitsVocabulary=unitsvocabulary)
+            unitsVocabulary=unitsvocabulary,
+            observation_type='measured' # everything that is output by the glider is considered measured
+            )
 
     # 6. Get mission instrument information
     iQ = models.InstrumentMission.objects.filter(instrument_mission=mQ.first().pk)
@@ -294,9 +300,9 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
         if serial is None:
             serial = ''
         # long_name
-        long_name = ''
-        # make_model
-        make_model = ''
+        long_name = i.instrument_calibrationSerial.instrument_serialNumberModel.instrument_longname
+        # make_model, assuming it's just make + model
+        make_model = make + ' ' + model
         # factory_calibrated
         factory_calibrated = 'yes'
         # calibration_date
@@ -313,7 +319,7 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
         # set dict for glider devices and instrument variables for profile variables
         gliderDeviceDict[gliderDeviceDictName] = dict(make=make,
                                                       model=model,
-                                                      serial=serial,
+                                                      serial_number=serial,
                                                       long_name=long_name,
                                                       make_model=make_model,
                                                       factory_calibrated=factory_calibrated,
@@ -321,7 +327,7 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                                                       calibration_report=calibration_report)
         profileVariablesDict[profileVariablesDictName] = dict(make=make,
                                                               model=model,
-                                                              serial=serial,
+                                                              serial_number=serial,
                                                               long_name=long_name,
                                                               make_model=make_model,
                                                               factory_calibrated=factory_calibrated,
@@ -423,7 +429,9 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                 units=units,
                 vocabulary=vocabulary,
                 unitsvocabulary=unitsvocabulary,
-                instrument=profileVariablesDictName)
+                instrument=profileVariablesDictName,
+                observation_type='measured'  # everything that is output by the glider is considered measured
+            )
             if not(replaceName is None):
                 netcdfVariablesDict[instrumentVariableDictName].update(replaceName=replaceName)
             # save one variable from each instrument, but the trick here is I need to save the instrumentVariableDictName
@@ -464,20 +472,24 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
             units = ''
         else:
             units = profileVar.variable_cfUnit.variable_unit
-        if profileVarDictName == 'profile_time':  # no units for profile_time
-            profileVariablesDict[profileVarDictName] = dict(long_name=long_name,
-                                                            standard_name=standard_name)
-        elif profileVarDictName == 'profile_id': # valid_min and valid_max
-            profileVariablesDict[profileVarDictName] = dict(long_name=long_name,
-                                                           standard_name=standard_name,
-                                                           units=units,
-                                                           valid_min=1, # copied from a cproof slocum yaml
-                                                           valid_max=2147483647 # copied from a cproof slocum yaml
+        profileVariablesDict[profileVarDictName] = dict(long_name=long_name,
+                                                        standard_name=standard_name,
+                                                        comment='',
+                                                        platform='platform', # to make IOOS DAC happy (should pyglider do this?)
+                                                        observation_type='calculated')
+        if profileVarDictName != 'profile_time': # no units for profile_time, pyglider will fill it in
+            profileVariablesDict[profileVarDictName].update(units=units)
+        if profileVarDictName == 'profile_id': # valid_min and valid_max
+            profileVariablesDict[profileVarDictName].update(valid_min=1, # copied from a cproof slocum yaml
+                                                            valid_max=2147483647 # copied from a cproof slocum yaml
                                                             )
-        else:
-            profileVariablesDict[profileVarDictName] = dict(long_name=long_name,
-                                                            standard_name=standard_name,
-                                                            units=units)
+        if bool(re.search('lon', profileVarDictName)):
+            profileVariablesDict[profileVarDictName].update(valid_min="-180.00",
+                                                           valid_max="180.00")
+        if bool(re.search('lat', profileVarDictName)):
+            profileVariablesDict[profileVarDictName].update(valid_min="-90.00",
+                                                           valid_max="90.00")
+
 
     # 10. start creating yaml for use in pyglider
     #    there are 4 components
@@ -489,6 +501,8 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                         comment='',
                         contributor_name=', '.join(allContributorNames),
                         contributor_role=', '.join(allContributorRoles),
+                        contributor_role_vocabulary=', '.join(allContributorVocabulary),
+                        Conventions='CF-1.6', # fixed value
                         creator_email='',
                         creator_name='',
                         creator_url='',
@@ -499,21 +513,26 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                         # institute (dfo) - gliderName + gliderSerial - deploymentDate
                         deployment_start=mQ.first().mission_deploymentDate,
                         deployment_end=mQ.first().mission_recoveryDate,
-                        format_version='',
+                        featureType='trajectory',  # fixed value
+                        format_version='IOOS_Glider_NetCDF_v2.0.nc', # fixed value
                         glider_name=psQ.first().platform_name,
                         glider_serial=psQ.first().platform_serial.replace('"', ''),
                         glider_model=pcQ.first().platform_model,
                         glider_instrument_name=pcQ.first().platform_model,  # check this
                         glider_wmo=psQ.first().platform_wmo,
-                        wmo_id=psQ.first().platform_wmo,  # pyglider specific
-                        institution='',
+                        wmo_id=psQ.first().platform_wmo,  # IOOS
+                        institution='Bedford Institute of Oceanography',
+                        institution_vocabulary='https://edmo.seadatanet.org/report/1811',
+                        internal_mission_identifier=mQ.first().mission_cruiseNumber,
                         keywords='',
                         keywords_vocabulary='',
                         license='',
                         metadata_link='',
-                        Metadata_Conventions='',
+                        Metadata_Conventions='CF-1.6, Unidata Dataset Discovery v1.0',
                         naming_authority='',
-                        network='',
+                        network=mQ.first().mission_network,
+                        platform="sub-surface gliders", # this is always going to be the case
+                        platform_vocabulary="https://vocab.nerc.ac.uk/collection/L06/current/27/",
                         platform_type=pcQ.first().platform_model + ' Glider',
                         processing_level='',
                         project='',
@@ -522,11 +541,12 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                         publisher_name='',
                         publisher_url='',
                         references='',
-                        sea_name='',
+                        sea_name='North Atlantic Ocean, East Coast - US/Canada',
                         source='',
                         standard_name_vocabulary='',
                         summary=mQ.first().mission_summary,
-                        transmission_system='')
+                        transmission_system=''
+                        )
     # for now i'm going to skip 'glider_devices', I think it's a C-PROOF thing
     # the information there will be summarized in the
     # 'instrument_[instrumentType]' variable that is seen in the IOOS format
