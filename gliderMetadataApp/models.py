@@ -118,9 +118,9 @@ class ContributorPeople(models.Model):
     contributor_email = models.CharField(max_length=50)
 
 
-class ContributorRole(models.Model):
-    contributor_vocabulary = models.CharField(max_length=200)
-    contributor_role = models.CharField(max_length=50)
+class Role(models.Model):
+    role_vocabulary = models.CharField(max_length=200)
+    role_name = models.CharField(max_length=50)
 
 
 class VariableCFStandard(models.Model):
@@ -159,6 +159,7 @@ class InstrumentVariable(models.Model):
     instrument_cfVariable = models.ForeignKey(VariableCFStandard, on_delete=models.SET_NULL, null=True)
     instrument_variableSourceName = models.CharField(max_length=50)
     instrument_variableSourceUnits = models.CharField(max_length=50, null=True)
+    instrument_gcmdKeyword = models.CharField(max_length=200, null=True)
 
 
 class PlatformVariable(models.Model):
@@ -171,9 +172,7 @@ class PlatformVariable(models.Model):
 
 class Institute(models.Model):
     institute_name = models.CharField(max_length=100)
-    institute_agency = models.CharField(max_length=100)
-    institute_city = models.CharField(max_length=50)
-    institute_country = models.CharField(max_length=50)
+    institute_vocabulary = models.CharField(max_length=200)
 
 
 class ArgosTagPTT(models.Model):
@@ -225,10 +224,6 @@ class Mission(models.Model):
     mission_institute = models.ForeignKey(Institute, on_delete=models.SET_NULL, null=True)
     mission_comments = models.CharField(max_length=300)
     mission_summary = models.CharField(max_length=1200, null=True)
-    mission_contributingInstitutions = models.CharField(max_length=1000, null=True)
-    mission_contributingInstitutionVocabulary = models.CharField(max_length=1500, null=True)
-    mission_contributingInstitutionsRole = models.CharField(max_length=1000, null=True)
-    mission_contributingInstitutionsRoleVocabulary = models.CharField(max_length=1500, null=True)
     mission_network = models.CharField(max_length=1500, null=True)
 
 
@@ -242,4 +237,9 @@ class InstrumentMission(models.Model):
 class ContributorMission(models.Model):
     contributor_mission = models.ForeignKey(Mission, on_delete=models.SET_NULL, null=True)
     contributor_missionPerson = models.ForeignKey(ContributorPeople, on_delete=models.SET_NULL, null=True)
-    contributor_missionRole = models.ForeignKey(ContributorRole, on_delete=models.SET_NULL, null=True)
+    contributor_missionRole = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True)
+
+class ContributingInstitutionMission(models.Model):
+    contributingInstitution_mission = models.ForeignKey(Mission, on_delete=models.SET_NULL, null=True)
+    contributingInstitution_missionRole = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True)
+    contributingInstitution_missionInstitute = models.ForeignKey(Institute, on_delete=models.SET_NULL, null=True)

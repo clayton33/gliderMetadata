@@ -94,7 +94,6 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
         pnQ = models.Mission.object.filter(mission_platformName=psQ.first().pk)
         print(f"The most recent mission entered into the database for platform_serial is {pnQ.values().last()}")
         return
-
     # 4. Get contributor information
     cQ = models.ContributorMission.objects.filter(contributor_mission=mQ.first().pk)
     if not (cQ.exists()):
@@ -110,9 +109,25 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
         allContributorNames.append(item.contributor_missionPerson.contributor_firstName +
                                    ' ' +
                                    item.contributor_missionPerson.contributor_lastName)
-        allContributorRoles.append(item.contributor_missionRole.contributor_role)
-        allContributorVocabulary.append(item.contributor_missionRole.contributor_vocabulary)
-
+        allContributorRoles.append(item.contributor_missionRole.role_name)
+        allContributorVocabulary.append(item.contributor_missionRole.role_vocabulary)
+    # get contributingInstitution information (very similar pull to contributors)
+    ciQ = models.ContributingInstitutionMission.objects.filter(contributingInstitution_mission=mQ.first().pk)
+    if not (ciQ.exists()):
+        print(f"No contributing institution entries for glider with serial number {platform_serial} and"
+              f"mission {mission_number} in database. Please contact developer or enter information"
+              f"into database.")
+        return
+    # get all the contributors out of the query
+    allContributingInstitution = []
+    allContributingInstitutionRole = []
+    allContributingInstitutionVocabulary = []
+    allContributingInstitutionRoleVocabulary = []
+    for item in ciQ.iterator():
+        allContributingInstitution.append(item.contributingInstitution_missionInstitute.institute_name)
+        allContributingInstitutionVocabulary.append(item.contributingInstitution_missionInstitute.institute_vocabulary)
+        allContributingInstitutionRole.append(item.contributingInstitution_missionRole.role_name)
+        allContributingInstitutionRoleVocabulary.append(item.contributingInstitution_missionRole.role_vocabulary)
     # 5. Define variables dict, and add timebase and interpolate options
     netcdfVariablesDict = {}
     netcdfVariablesDict['timebase'] = dict(source=timebase_sourceVariable)
@@ -275,6 +290,7 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
     gliderDeviceDict = {}
     profileVariablesDict = {}  # need to add glider devices to profileVariableDict as well
     keepVariables = []
+    gcmdKeywords = []
     for instrument in iQ.iterator():
         # get glider_devices and instrument types for profile_variables
         i = instrument.instrument_calibration  # this is just to make the below a bit easier
@@ -364,6 +380,8 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
             if bool(re.search('_COUNT', instrumentVariable.instrument_variableSourceName)):
                 print(f"Variable is {instrumentVariable.instrument_variableSourceName}, omitting COUNT variable.")
                 continue
+            # add gcmdKeywords
+            gcmdKeywords.append(instrumentVariable.instrument_gcmdKeyword)
             # same logic as parameterVariable, follow the same statements
             # need to set things for variables,
             #   dict name, which will be the variable name in the netCDF file, NERC primary, CF secondary, sourceName third
@@ -441,7 +459,12 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
             # add conversion to GPCTD_DOF
             if instrumentVariable.instrument_variableSourceName == 'GPCTD_DOF':
                 netcdfVariablesDict[instrumentVariableDictName].update(calculate_oxygenConcentration = 'sbe43Fhz2conc')
-
+    # convert the gcmdKeywords to a set (to get unique set), make it a list, then add the platform keyword
+    print(f"length of gcmdKeywords is {len(gcmdKeywords)}")
+    # remove 'None' in gcmdKeywords
+    gcmdKeywords = [x for x in gcmdKeywords if x is not None]
+    gcmdKeywords = list(set(gcmdKeywords))
+    gcmdKeywords.append("AUVS > Autonomous Underwater Vehicles")
     # put keepVariables in netcdf_variables
     if add_keep_variables:
         # netcdfVariablesDict['keep_variables']='[' + ', '.join(keepVariables) + ']'
@@ -489,8 +512,6 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
         if bool(re.search('lat', profileVarDictName)):
             profileVariablesDict[profileVarDictName].update(valid_min="-90.00",
                                                            valid_max="90.00")
-
-
     # 10. start creating yaml for use in pyglider
     #    there are 4 components
     #       metadata
@@ -502,6 +523,10 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                         contributor_name=', '.join(allContributorNames),
                         contributor_role=', '.join(allContributorRoles),
                         contributor_role_vocabulary=', '.join(allContributorVocabulary),
+                        contributing_institutions=', '.join(allContributingInstitution),
+                        contributing_institutions_vocabulary=', '.join(allContributingInstitutionVocabulary),
+                        contributing_institutions_role=', '.join(allContributingInstitutionRole),
+                        contributing_institutions_role_vocabulary=', '.join(allContributingInstitutionRoleVocabulary),
                         Conventions='CF-1.6', # fixed value
                         creator_email='',
                         creator_name='',
@@ -524,8 +549,8 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                         institution='Bedford Institute of Oceanography',
                         institution_vocabulary='https://edmo.seadatanet.org/report/1811',
                         internal_mission_identifier=mQ.first().mission_cruiseNumber,
-                        keywords='',
-                        keywords_vocabulary='',
+                        keywords=', '.join(gcmdKeywords),
+                        keywords_vocabulary='GCMD Science Keywords',
                         license='',
                         metadata_link='',
                         Metadata_Conventions='CF-1.6, Unidata Dataset Discovery v1.0',

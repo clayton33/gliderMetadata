@@ -62,10 +62,10 @@ for d in df.itertuples():
         # as of 20230721, the NERC G04 vocabulary
         # this is a bit dirty, but I know the role names, so pull it out by that
         if(i == 'PI'):
-            crQ = models.ContributorRole.objects.get(contributor_role='principalInvestigator')
+            crQ = models.Role.objects.get(role_name='PI')
             contributorPeopleRolePk.append(crQ.pk)
         if(i == 'Operator'):
-            crQ = models.ContributorRole.objects.get(contributor_role='custodian')
+            crQ = models.Role.objects.get(role_name='Operator')
             contributorPeopleRolePk.append(crQ.pk)
         # append mission pk
         if missionQ is None:
@@ -86,5 +86,5 @@ contributorDf = pd.DataFrame(list(zip(contributorPeopleMissionPk,
 for row in contributorDf.itertuples():
     icm = models.ContributorMission(contributor_mission = models.Mission.objects.get(pk=getattr(row, 'contributorMissionPk')),
                                     contributor_missionPerson = models.ContributorPeople.objects.get(pk=getattr(row, 'contributorPersonPk')),
-                                    contributor_missionRole = models.ContributorRole.objects.get(pk=getattr(row, 'contributorPersonRolePk')))
+                                    contributor_missionRole = models.Role.objects.get(pk=getattr(row, 'contributorPersonRolePk')))
     icm.save()
