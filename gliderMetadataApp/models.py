@@ -225,6 +225,7 @@ class Mission(models.Model):
     mission_comments = models.CharField(max_length=300)
     mission_summary = models.CharField(max_length=1200, null=True)
     mission_network = models.CharField(max_length=1500, null=True)
+    mission_project = models.CharField(max_length=300, null=True)
 
 
 class InstrumentMission(models.Model):

@@ -158,16 +158,22 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                 long_name = 'time'
                 standard_name = 'time'
                 units = 'seconds since 1970-01-01T00:00:00Z'
+                vocabulary = ''
+                unitsvocabulary = ''
             else:
                 long_name = ipcvQ.platform_nercVariable.variable_nerc_variableLongName
                 standard_name = ipcvQ.platform_cfVariable.variable_standardName
+                vocabulary = ipcvQ.platform_nercVariable.variable_nerc_variableVocabulary
                 units = ipcvQ.platform_nercVariable.variable_nerc_unit
+                unitsvocabulary =ipcvQ.platform_nercVariable.variable_nerc_unitVocabulary
             netcdfVariablesDict[standard_name] = dict(
                 source=ipcvQ.platform_variableSourceName,
                 axis=getattr(row, 'axisVariable'),
                 long_name=long_name,
                 standard_name=standard_name,
+                vocabulary=vocabulary,
                 units=units,
+                unitsVocabulary=unitsvocabulary,
                 observation_type='measured' # everything that is output by the glider is considered measured
             )
             if getattr(row, 'sourceVariable') in ['NAV_LATITUDE', 'NAV_LONGITUDE']:
@@ -518,7 +524,7 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
     #       glider_devices
     #       netcdf_variables
     #       profile_variables
-    metadataDict = dict(acknowledgement='',
+    metadataDict = dict(acknowledgement='Funding from Fisheries and Oceans Canada.',
                         comment='',
                         contributor_name=', '.join(allContributorNames),
                         contributor_role=', '.join(allContributorRoles),
@@ -528,9 +534,9 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                         contributing_institutions_role=', '.join(allContributingInstitutionRole),
                         contributing_institutions_role_vocabulary=', '.join(allContributingInstitutionRoleVocabulary),
                         Conventions='CF-1.6', # fixed value
-                        creator_email='',
-                        creator_name='',
-                        creator_url='',
+                        creator_email='BIO.Datashop@dfo-mpo.gc.ca',
+                        creator_name='Bedford Institute of Oceanography',
+                        creator_url='https://www.bio.gc.ca/index-en.php',
                         data_mode='P',
                         deployment_id=mQ.first().mission_number,
                         deployment_name='dfo' + '-' + psQ.first().platform_name + psQ.first().platform_serial.replace(
@@ -551,7 +557,7 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                         internal_mission_identifier=mQ.first().mission_cruiseNumber,
                         keywords=', '.join(gcmdKeywords),
                         keywords_vocabulary='GCMD Science Keywords',
-                        license='',
+                        license='Open Government Licence - Canada',
                         metadata_link='',
                         Metadata_Conventions='CF-1.6, Unidata Dataset Discovery v1.0',
                         naming_authority='',
@@ -560,15 +566,15 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                         platform_vocabulary="https://vocab.nerc.ac.uk/collection/L06/current/27/",
                         platform_type=pcQ.first().platform_model + ' Glider',
                         processing_level='',
-                        project='',
+                        project='Atlantic Zone Monitoring Program',
                         project_url='',
-                        publisher_email='',
-                        publisher_name='',
-                        publisher_url='',
+                        publisher_email='BIO.Datashop@dfo-mpo.gc.ca',
+                        publisher_name='Bedford Institute of Oceanography',
+                        publisher_url='https://www.bio.gc.ca/index-en.php',
                         references='',
                         sea_name='North Atlantic Ocean, East Coast - US/Canada',
-                        source='',
-                        standard_name_vocabulary='',
+                        source='Observational data from a profiling glider.',
+                        standard_name_vocabulary='Standard Name Table (v85, 21 May 2024)',
                         summary=mQ.first().mission_summary,
                         transmission_system=''
                         )
