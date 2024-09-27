@@ -6,7 +6,6 @@ import re
 from gliderMetadataApp import models
 from scripts import fn_readMissionFile as rmf
 
-
 def convert_date(date):
     return pd.to_datetime(date.apply(lambda d: str(d)[0:8]), errors='coerce')
 
@@ -137,7 +136,7 @@ for i in gliderPldFirm:
 df['platformPayloadFirmwarePk'] = platformPayloadFirmPk
 
 # vessel for recovery and deployment
-vessel = df['boatdeprev']
+vessel = df['boatdeprec']
 # meaning of vessel objects : deployment/recovery
 # mission_deploymentVessel
 deploymentVessel = [x.split('/')[0] for x in vessel]
@@ -254,38 +253,45 @@ df['argosTagPk'] = argosTagPk
 
 # initialize model.Mission
 for row in df.itertuples():
-     im = models.Mission(mission_platformName=models.PlatformName.objects.get(pk=getattr(row, 'platformNamePk')),
-                         mission_number=getattr(row, 'missionNumber'),
-                         mission_cruiseNumber=getattr(row, 'CruiseName'), # check
-                         mission_platformNavFirmware=models.PlatformNavigationFirmware.objects.get(pk=getattr(row, 'platformNavigationFirmwarePk')),
-                         mission_platformBattery=models.PlatformBattery.objects.get(pk=getattr(row, 'platformBatteryPk')),
-                         mission_platformRelease=models.PlatformRelease.objects.get(pk=getattr(row, 'platformReleasePk')),
-                         mission_platformPayload=models.PlatformPayload.objects.get(pk=getattr(row, 'platformPayloadPk')),
-                         mission_platformPayloadFirmware=models.PlatformPayloadFirmware.objects.get(pk=getattr(row, 'platformPayloadFirmwarePk')),
-                         mission_deploymentDate=getattr(row, 'Deploymentdate'),
-                         mission_recoveryDate=getattr(row, 'Recoverydate'),
-                         mission_batteryMax=getattr(row, 'Batterymax'),
-                         mission_batteryMin=getattr(row,'Batterymin'),
-                         mission_deploymentVessel=models.Vessel.objects.get(pk=getattr(row, 'deploymentVesselPk')),
-                         mission_deploymentLongitude=getattr(row, 'Deploylon'),
-                         mission_deploymentLatitude=getattr(row, 'Deploylat'),
-                         mission_recoveryVessel=models.Vessel.objects.get(pk=getattr(row, 'recoveryVesselPk')),
-                         mission_recoveryLongitude=None,
-                         mission_recoveryLatitude=None,
-                         mission_minimumLongitude=getattr(row, 'Lonmin'),
-                         mission_minimumLatitude=getattr(row, 'Latmin'),
-                         mission_maximumLongitude=getattr(row, 'Lonmax'),
-                         mission_maximumLatitude=getattr(row, 'Latmax'),
-                         mission_waypointsGiven=getattr(row, 'Waypointgiven'),
-                         mission_distanceTravelled=getattr(row, 'Distancetravelledkm'),
-                         mission_numberOfYos=getattr(row, 'numberOfYos'),
-                         mission_numberOfScienceYos=getattr(row, 'numberOfScienceProfiles'),
-                         mission_profilingScheme=getattr(row, 'scienceEveryNumberOfYos'), # check attr name
-                         mission_numberOfAlarms=getattr(row, 'numberOfAlarms'),
-                         mission_numberOfAlarmsWithOT=getattr(row, 'numberOfAlarmsWithOT'), # check db name
-                         mission_hoursOfOT=getattr(row, 'numberOfAlarmsWithOT'), # check db name
-                         mission_ballastedDensity=getattr(row, 'Ballasteddensity'),
-                         mission_argosTag=models.ArgosTagSerialNumber.objects.get(pk=getattr(row, 'argosTagPk')),
-                         mission_institute=None,
-                         mission_comments=getattr(row, 'Comments'))
-     im.save()
+    imQ = models.Mission.objects.filter(mission_platformName=getattr(row, 'platformNamePk'),
+                                        mission_number=getattr(row, 'missionNumber'))
+    if imQ.first() is None: # mission is not in database yet
+        print(f"Adding glider {getattr(row, 'Glider')} and mission {getattr(row, 'missionNumber')} to database.")
+        im = models.Mission(mission_platformName=models.PlatformName.objects.get(pk=getattr(row, 'platformNamePk')),
+                            mission_number=getattr(row, 'missionNumber'),
+                            mission_cruiseNumber=getattr(row, 'CruiseName'), # check
+                            mission_platformNavFirmware=models.PlatformNavigationFirmware.objects.get(pk=getattr(row, 'platformNavigationFirmwarePk')),
+                            mission_platformBattery=models.PlatformBattery.objects.get(pk=getattr(row, 'platformBatteryPk')),
+                            mission_platformRelease=models.PlatformRelease.objects.get(pk=getattr(row, 'platformReleasePk')),
+                            mission_platformPayload=models.PlatformPayload.objects.get(pk=getattr(row, 'platformPayloadPk')),
+                            mission_platformPayloadFirmware=models.PlatformPayloadFirmware.objects.get(pk=getattr(row, 'platformPayloadFirmwarePk')),
+                            mission_deploymentDate=getattr(row, 'Deploymentdate'),
+                            mission_recoveryDate=getattr(row, 'Recoverydate'),
+                            mission_batteryMax=getattr(row, 'Batterymax'),
+                            mission_batteryMin=getattr(row,'Batterymin'),
+                            mission_deploymentVessel=models.Vessel.objects.get(pk=getattr(row, 'deploymentVesselPk')),
+                            mission_deploymentLongitude=getattr(row, 'Deploylon'),
+                            mission_deploymentLatitude=getattr(row, 'Deploylat'),
+                            mission_recoveryVessel=models.Vessel.objects.get(pk=getattr(row, 'recoveryVesselPk')),
+                            mission_recoveryLongitude=None,
+                            mission_recoveryLatitude=None,
+                            mission_minimumLongitude=getattr(row, 'Lonmin'),
+                            mission_minimumLatitude=getattr(row, 'Latmin'),
+                            mission_maximumLongitude=getattr(row, 'Lonmax'),
+                            mission_maximumLatitude=getattr(row, 'Latmax'),
+                            mission_waypointsGiven=getattr(row, 'Waypointgiven'),
+                            mission_distanceTravelled=getattr(row, 'Distancetravelledkm'),
+                            mission_numberOfYos=getattr(row, 'numberOfYos'),
+                            mission_numberOfScienceYos=getattr(row, 'numberOfScienceProfiles'),
+                            mission_profilingScheme=getattr(row, 'scienceEveryNumberOfYos'), # check attr name
+                            mission_numberOfAlarms=getattr(row, 'numberOfAlarms'),
+                            mission_numberOfAlarmsWithOT=getattr(row, 'numberOfAlarmsWithOT'), # check db name
+                            mission_hoursOfOT=getattr(row, 'numberOfAlarmsWithOT'), # check db name
+                            mission_ballastedDensity=getattr(row, 'Ballasteddensity'),
+                            mission_argosTag=models.ArgosTagSerialNumber.objects.get(pk=getattr(row, 'argosTagPk')),
+                            mission_institute=None,
+                            mission_comments=getattr(row, 'Comments'))
+        im.save()
+    else :
+        print(f"There is already a mission for glider {df['Glider']} mission {df['missionNumber']},"
+              f"proceeding to next mission." )

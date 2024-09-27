@@ -219,6 +219,8 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
         print(f"skipping DeadReckoning")
         skipVars.append('DeadReckoning')
     keepNavVars = ['Pitch', 'Roll', 'Heading'] # fragile ?
+    # pull out one variable from each instrument (and a nav variable) for keepVariables
+    keepVariables = []
     for platformVariable in ipQ.iterator():
         platformVariableSource = platformVariable.platform_variableSourceName
         if platformVariableSource in coordinateSourceVariables:
@@ -276,6 +278,9 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
             unitsVocabulary=unitsvocabulary,
             observation_type='measured' # everything that is output by the glider is considered measured
             )
+        if platformVariable.platform_variableSourceName == keepNavVars[0]: # this might not be good for the long run (keepNavVars[0])
+            print(f"Saving {platformVariableDictName} to keepVariables")
+            keepVariables.append(platformVariableDictName)
 
     # 6. Get mission instrument information
     iQ = models.InstrumentMission.objects.filter(instrument_mission=mQ.first().pk)
@@ -295,7 +300,6 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
     # pull out one variable from each instrument for keepVariables
     gliderDeviceDict = {}
     profileVariablesDict = {}  # need to add glider devices to profileVariableDict as well
-    keepVariables = []
     gcmdKeywords = []
     for instrument in iQ.iterator():
         # get glider_devices and instrument types for profile_variables
