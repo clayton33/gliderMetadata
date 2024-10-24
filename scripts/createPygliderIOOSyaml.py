@@ -155,7 +155,7 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
             # special treatment for time, i'll have to think about this
             # this is an OK hack for now, i'm not really sure if the units are correct though
             if getattr(row, 'sourceVariable') == 'Timestamp':
-                long_name = 'time'
+                long_name = 'Time'
                 standard_name = 'time'
                 units = 'seconds since 1970-01-01T00:00:00Z'
                 vocabulary = ''
@@ -350,7 +350,11 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                                                       make_model=make_model,
                                                       factory_calibrated=factory_calibrated,
                                                       calibration_date=calibration_date,
-                                                      calibration_report=calibration_report)
+                                                      calibration_report=calibration_report,
+                                                      platform="platform", # IOOS
+                                                      type="platform", # IOOS,
+                                                      comment = ' '
+                                                      )
         profileVariablesDict[profileVariablesDictName] = dict(make=make,
                                                               model=model,
                                                               serial_number=serial,
@@ -358,7 +362,11 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                                                               make_model=make_model,
                                                               factory_calibrated=factory_calibrated,
                                                               calibration_date=calibration_date,
-                                                              calibration_report=calibration_report)
+                                                              calibration_report=calibration_report,
+                                                              platform="platform",  # IOOS
+                                                              type="platform",  # IOOS
+                                                              comment = ' '
+                                                              )
         # calibration coefficients (if applicable) 20240730, only Sea-Bird 43F
         if make == 'Sea-Bird' and model == '43F':
             # use calibration pk
@@ -458,7 +466,12 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                 vocabulary=vocabulary,
                 unitsvocabulary=unitsvocabulary,
                 instrument=profileVariablesDictName,
-                observation_type='measured'  # everything that is output by the glider is considered measured
+                observation_type='measured',  # everything that is output by the glider is considered measured
+                accuracy=float(instrumentVariable.instrument_accuracy) if instrumentVariable.instrument_accuracy != None else "",
+                precision=float(instrumentVariable.instrument_precision) if instrumentVariable.instrument_precision != None else "",
+                resolution=float(instrumentVariable.instrument_resolution) if instrumentVariable.instrument_resolution != None else "",
+                valid_min=float(instrumentVariable.instrument_validMin) if instrumentVariable.instrument_validMin != None else "",
+                valid_max=float(instrumentVariable.instrument_validMax) if instrumentVariable.instrument_validMax != None else ""
             )
             if not(replaceName is None):
                 netcdfVariablesDict[instrumentVariableDictName].update(replaceName=replaceName)
@@ -469,6 +482,11 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
             # add conversion to GPCTD_DOF
             if instrumentVariable.instrument_variableSourceName == 'GPCTD_DOF':
                 netcdfVariablesDict[instrumentVariableDictName].update(calculate_oxygenConcentration = 'sbe43Fhz2conc')
+            # add some things to pressure variables, GPCTD_PRESSURE and LEGATO_PRESSURE
+            if instrumentVariable.instrument_variableSourceName in ['GPCTD_PRESSURE', 'LEGATO_PRESSURE']:
+                netcdfVariablesDict[instrumentVariableDictName].update(positive='down', # IOOS
+                                                                      reference_datum='sea-surface' # IOOS
+                                                                      )
     # convert the gcmdKeywords to a set (to get unique set), make it a list, then add the platform keyword
     print(f"length of gcmdKeywords is {len(gcmdKeywords)}")
     # remove 'None' in gcmdKeywords
@@ -507,7 +525,7 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
             units = profileVar.variable_cfUnit.variable_unit
         profileVariablesDict[profileVarDictName] = dict(long_name=long_name,
                                                         standard_name=standard_name,
-                                                        comment='',
+                                                        comment=' ',
                                                         platform='platform', # to make IOOS DAC happy (should pyglider do this?)
                                                         observation_type='calculated')
         if profileVarDictName != 'profile_time': # no units for profile_time, pyglider will fill it in
@@ -522,6 +540,10 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
         if bool(re.search('lat', profileVarDictName)):
             profileVariablesDict[profileVarDictName].update(valid_min="-90.00",
                                                            valid_max="90.00")
+        if profileVarDictName in ['u', 'v']:
+            profileVariablesDict[profileVarDictName].update(valid_min=-10, # generic IOOS suggestion
+                                                            valid_max=10 # generic IOOS suggestion
+                                                            )
     # 10. start creating yaml for use in pyglider
     #    there are 4 components
     #       metadata
@@ -529,7 +551,7 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
     #       netcdf_variables
     #       profile_variables
     metadataDict = dict(acknowledgement='Funding from Fisheries and Oceans Canada.',
-                        comment='',
+                        comment=' ',
                         contributor_name=', '.join(allContributorNames),
                         contributor_role=', '.join(allContributorRoles),
                         contributor_role_vocabulary=', '.join(allContributorVocabulary),
@@ -550,11 +572,15 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                         deployment_end=mQ.first().mission_recoveryDate,
                         featureType='trajectory',  # fixed value
                         format_version='IOOS_Glider_NetCDF_v2.0.nc', # fixed value
-                        glider_name=psQ.first().platform_name,
-                        glider_serial=psQ.first().platform_serial.replace('"', ''),
-                        glider_model=pcQ.first().platform_model,
-                        glider_instrument_name=pcQ.first().platform_model,  # check this
-                        glider_wmo=psQ.first().platform_wmo,
+                        glider_name=psQ.first().platform_name, # pyglider
+                        glider_serial=psQ.first().platform_serial.replace('"', ''), # pyglider
+                        glider_model=pcQ.first().platform_model, # pyglider
+                        glider_instrument_name=pcQ.first().platform_model,  # pyglider
+                        glider_wmo=psQ.first().platform_wmo, # pyglider
+                        platform_name=psQ.first().platform_name,
+                        platform_serial_number=psQ.first().platform_serial.replace('"', ''),
+                        platform_model=pcQ.first().platform_model,
+                        wmo_identifier=psQ.first().platform_wmo, # OG1
                         wmo_id=psQ.first().platform_wmo,  # IOOS
                         institution='Bedford Institute of Oceanography',
                         institution_vocabulary='https://edmo.seadatanet.org/report/1811',
@@ -576,7 +602,7 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                         publisher_name='Bedford Institute of Oceanography',
                         publisher_url='https://www.bio.gc.ca/index-en.php',
                         references='',
-                        sea_name='North Atlantic Ocean, East Coast - US/Canada',
+                        sea_name='Northwest Atlantic Ocean (limit-40 W)',
                         source='Observational data from a profiling glider.',
                         standard_name_vocabulary='Standard Name Table (v85, 21 May 2024)',
                         summary=mQ.first().mission_summary,

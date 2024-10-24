@@ -1,6 +1,6 @@
 import io
 import operator
-
+import numpy as np
 import pandas as pd
 import re
 from gliderMetadataApp import models
@@ -23,7 +23,7 @@ for i in gliderSerial:
     platformNameQ = models.PlatformName.objects.filter(platform_serial=i).first()
     if platformNameQ is None:
         print(f"Unable to find primary key value for glider with serial number {i}")
-        platformNamePk.append(None)
+        platformNamePk.append(np.nan)
     else:
         platformNamePk.append(platformNameQ.pk)
 
@@ -45,7 +45,7 @@ for i in gliderNavFirm:
     platformNavFirmQ = models.PlatformNavigationFirmware.objects.filter(platform_navFirmwareVersion=i).first()
     if platformNavFirmQ is None:
         print(f"Unable to find primary key value for navigation firmware for version {i}")
-        platformNavFirmPk.append(None)
+        platformNavFirmPk.append(np.nan)
     else:
         platformNavFirmPk.append(platformNavFirmQ.pk)
 
@@ -61,7 +61,7 @@ for i in gliderBattery:
     platformBatteryQ = models.PlatformBattery.objects.filter(platform_batteryGeneration=i).first()
     if platformBatteryQ is None:
         print(f"Unable to find primary key value for battery with generation {i}")
-        platformBatteryPk.append(None)
+        platformBatteryPk.append(np.nan)
     else:
         platformBatteryPk.append(platformBatteryQ.pk)
 
@@ -161,7 +161,7 @@ for i in deploymentVessel:
     # get the first index so it's easier to use
     if len(ok) == 0:
         print(f"Unable to find a match for deployment vessel {i}")
-        depVesselPk.append(None)
+        depVesselPk.append(np.nan)
     else:
         if len(ok) > 1:
             print(
@@ -188,7 +188,7 @@ for i in recoveryVessel:
     # get the first index so it's easier to use
     if len(ok) == 0:
         print(f"Unable to find a match for recovery vessel {i}")
-        recVesselPk.append(None)
+        recVesselPk.append(np.nan)
     else:
         if len(ok) > 1:
             print(f"Found more than 1 match for recovery vessel {i}. The matches are {[modelsVessels[x] for x in ok]}")
@@ -216,36 +216,14 @@ argosTagDf = pd.DataFrame(argosTagList, columns=['serialNumber', 'PTT', 'Glider'
 argosTagPk = []
 
 for i in argosTagDf.itertuples():
-    argosMatch = models.ArgosTagSerialNumber.objects.filter(argosTag_serialNumber=getattr(i, 'serialNumber'))
-    # next get the PTT out of each match
-    # have to do it in loop since it's a primary key value
-    argosMatchPTT = []
-    for item in argosMatch.iterator():
-        argosMatchPTT.append(item.argosTag_PTTNumber.argosTag_PTT)
-    argosMatchSerialPk = argosMatch.values_list('argosTag_PTTNumber', flat=True).distinct()
-    # dateMatchSerialList = list(zip(dateMatchSerial, dateMatchSerialPk))
-    # dateMatchSerialDf = pd.DataFrame(dateMatchSerialList, columns=['serialNumber', 'PkValue'])
-    argosPTT = getattr(i, 'PTT')
-    ok = [bool(re.search(argosPTT, x)) for x in argosMatchPTT]  # True/False
-    ok = [i for i, x in enumerate(ok) if x]  # index
-    # get the first index so it's easier to use
-    if len(ok) == 0:
-        print(f"Unable to find a match for argosTag with serial number {getattr(i, 'serialNumber')} "
-              f"and PTT {argosPTT} "
-              f"for {getattr(i, 'Glider')} {getattr(i, 'missionNumber')} ")
+    apttQ = models.ArgosTagPTT.objects.get(argosTag_PTT=getattr(i, 'PTT'))
+    argosTagQ = models.ArgosTagSerialNumber.objects.filter(argosTag_PTTNumber=apttQ,
+                                                            argosTag_serialNumber=getattr(i, 'serialNumber'))
+    if argosTagQ.first() is None:
+        print(f"Unable to find match for Argos tag with PTT {getattr(i, 'PTT')}"
+              f" and serial number {getattr(i, 'serialNumber')}")
         argosTagPk.append(None)
     else:
-        if len(ok) > 1:
-            print(
-                f"Found more than 1 match for argosTag with serial number {getattr(i, 'serialNumber')} "
-                f"and PTT {argosPTT} "
-                f"The PTT matches are {[argosMatchPTT[x] for x in ok]}")
-            print(f"Using the first one")
-            ok = ok[0]
-        else:
-            ok = ok[0]
-        argosTagQ = models.ArgosTagSerialNumber.objects.filter(argosTag_serialNumber=getattr(i, 'serialNumber'),
-                                                               argosTag_PTTNumber=argosMatchSerialPk[ok])
         argosTagPk.append(argosTagQ.first().pk)
 
 # add argosTagPk to df
@@ -260,7 +238,7 @@ for row in df.itertuples():
         im = models.Mission(mission_platformName=models.PlatformName.objects.get(pk=getattr(row, 'platformNamePk')),
                             mission_number=getattr(row, 'missionNumber'),
                             mission_cruiseNumber=getattr(row, 'CruiseName'), # check
-                            mission_platformNavFirmware=models.PlatformNavigationFirmware.objects.get(pk=getattr(row, 'platformNavigationFirmwarePk')),
+                            mission_platformNavFirmware=None if pd.isna(getattr(row, 'platformNavigationFirmwarePk')) else models.PlatformNavigationFirmware.objects.get(pk=getattr(row, 'platformNavigationFirmwarePk')),
                             mission_platformBattery=models.PlatformBattery.objects.get(pk=getattr(row, 'platformBatteryPk')),
                             mission_platformRelease=models.PlatformRelease.objects.get(pk=getattr(row, 'platformReleasePk')),
                             mission_platformPayload=models.PlatformPayload.objects.get(pk=getattr(row, 'platformPayloadPk')),
@@ -269,10 +247,11 @@ for row in df.itertuples():
                             mission_recoveryDate=getattr(row, 'Recoverydate'),
                             mission_batteryMax=getattr(row, 'Batterymax'),
                             mission_batteryMin=getattr(row,'Batterymin'),
-                            mission_deploymentVessel=models.Vessel.objects.get(pk=getattr(row, 'deploymentVesselPk')),
+                            mission_deploymentVessel=None if pd.isna(getattr(row, 'deploymentVesselPk')) else models.Vessel.objects.get(pk=getattr(row, 'deploymentVesselPk')),
                             mission_deploymentLongitude=getattr(row, 'Deploylon'),
                             mission_deploymentLatitude=getattr(row, 'Deploylat'),
-                            mission_recoveryVessel=models.Vessel.objects.get(pk=getattr(row, 'recoveryVesselPk')),
+                            mission_recoveryVessel=None if pd.isna(getattr(row, 'recoveryVesselPk')) else models.Vessel.objects.get(pk=getattr(row, 'recoveryVesselPk'))
+,
                             mission_recoveryLongitude=None,
                             mission_recoveryLatitude=None,
                             mission_minimumLongitude=getattr(row, 'Lonmin'),
@@ -293,5 +272,5 @@ for row in df.itertuples():
                             mission_comments=getattr(row, 'Comments'))
         im.save()
     else :
-        print(f"There is already a mission for glider {df['Glider']} mission {df['missionNumber']},"
-              f"proceeding to next mission." )
+        print(f"There is already a mission for glider {getattr(row, 'Glider')} mission {getattr(row, 'missionNumber')}, "
+              f"proceeding to next mission.")

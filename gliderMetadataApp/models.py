@@ -160,6 +160,11 @@ class InstrumentVariable(models.Model):
     instrument_variableSourceName = models.CharField(max_length=50)
     instrument_variableSourceUnits = models.CharField(max_length=50, null=True)
     instrument_gcmdKeyword = models.CharField(max_length=200, null=True)
+    instrument_accuracy = models.DecimalField(max_digits=12, decimal_places=6, null=True)
+    instrument_precision = models.DecimalField(max_digits=12, decimal_places=6, null=True)
+    instrument_resolution = models.DecimalField(max_digits=12, decimal_places=6, null=True)
+    instrument_validMin = models.DecimalField(max_digits=12, decimal_places=6, null=True)
+    instrument_validMax = models.DecimalField(max_digits=12, decimal_places=6, null=True)
 
 
 class PlatformVariable(models.Model):
