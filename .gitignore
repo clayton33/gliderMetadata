@@ -237,3 +237,5 @@ fabric.properties
 *.png
 # no .dot
 *.dot
+*.txt
+
