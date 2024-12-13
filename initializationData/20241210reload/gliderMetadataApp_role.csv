@@ -1,0 +1,8 @@
+"id","role_vocabulary","role_name"
+"1","http://vocab.nerc.ac.uk/collection/W08/current/CONT0002/","Owner"
+"2","http://vocab.nerc.ac.uk/collection/W08/current/CONT0005/","Technical Coordinator"
+"3","http://vocab.nerc.ac.uk/collection/W08/current/CONT0004/","PI"
+"4","http://vocab.nerc.ac.uk/collection/W08/current/CONT0003/","Operator"
+"5","http://vocab.nerc.ac.uk/collection/W08/current/CONT0007/","Service Provider"
+"6","http://vocab.nerc.ac.uk/collection/W08/current/CONT0001/","Manufacturer"
+"7","http://vocab.nerc.ac.uk/collection/W08/current/CONT0006/","Data scientist"

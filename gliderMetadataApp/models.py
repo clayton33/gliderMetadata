@@ -227,7 +227,7 @@ class Mission(models.Model):
     mission_ballastedDensity = models.DecimalField(max_digits=6, decimal_places=2)
     mission_argosTag = models.ForeignKey(ArgosTagSerialNumber, on_delete=models.SET_NULL, null=True)
     mission_institute = models.ForeignKey(Institute, on_delete=models.SET_NULL, null=True)
-    mission_comments = models.CharField(max_length=300)
+    mission_comments = models.CharField(max_length=300, null=True)
     mission_summary = models.CharField(max_length=1200, null=True)
     mission_network = models.CharField(max_length=1500, null=True)
     mission_project = models.CharField(max_length=300, null=True)
