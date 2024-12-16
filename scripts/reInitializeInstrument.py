@@ -98,6 +98,28 @@ def initiate_InstrumentMission():
         im.save()
 
 
+def initiate_InstrumentSeaBird43FOxygenCalibrationCoefficients():
+    file = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_instrumentseabird43foxygencalibrationcoefficients.csv", mode="r")
+    df = pd.read_csv(file)
+    # calibration
+    fileic = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_instrumentcalibration.csv",
+                       mode="r")
+    dfic = pd.read_csv(fileic)
+    for row in df.itertuples():
+        dficsub = dfic[dfic['id'] == getattr(row, 'calibrationSeaBird43F_calibration_id')].iloc[0]
+        ic = models.InstrumentCalibration.objects.get(instrument_calibrationDate=dficsub['instrument_calibrationDate'],
+                                                      instrument_calibrationReport=dficsub['instrument_calibrationReport'])
+        iocc = models.InstrumentSeabird43FOxygenCalibrationCoefficients(calibrationSeaBird43F_calibration=ic,
+                                                                         calibrationSeaBird43F_Soc=getattr(row, 'calibrationSeaBird43F_Soc'),
+                                                                         calibrationSeaBird43F_Foffset=getattr(row, 'calibrationSeaBird43F_Foffset'),
+                                                                         calibrationSeaBird43F_Tau20=getattr(row, 'calibrationSeaBird43F_Tau20'),
+                                                                         calibrationSeaBird43F_A=getattr(row, 'calibrationSeaBird43F_A'),
+                                                                         calibrationSeaBird43F_B=getattr(row, 'calibrationSeaBird43F_B'),
+                                                                         calibrationSeaBird43F_C=getattr(row, 'calibrationSeaBird43F_C'),
+                                                                         calibrationSeaBird43F_Enom=getattr(row, 'calibrationSeaBird43F_Enom'))
+        iocc.save()
+
+
 # commented out calls to functions indicates that the tables were initialized
 # note that if the database has to be re-initialized, some care should be taken
 # for the primary key call (see comments next to applicable functions)
@@ -107,3 +129,4 @@ def initiate_InstrumentMission():
 # initiate_InstrumentSerialNumber() # primary key call to model
 # initiate_InstrumentCalibration() # primary key call to serial number
 # initiate_InstrumentMission() # primary key call to instrumentCalibration and Mission
+initiate_InstrumentSeaBird43FOxygenCalibrationCoefficients() # primary key call to InstrumentCalibration
