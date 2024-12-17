@@ -84,7 +84,17 @@ contributorDf = pd.DataFrame(list(zip(contributorPeopleMissionPk,
 
 # initialize InstrumentMission
 for row in contributorDf.itertuples():
-    icm = models.ContributorMission(contributor_mission = models.Mission.objects.get(pk=getattr(row, 'contributorMissionPk')),
-                                    contributor_missionPerson = models.ContributorPeople.objects.get(pk=getattr(row, 'contributorPersonPk')),
-                                    contributor_missionRole = models.Role.objects.get(pk=getattr(row, 'contributorPersonRolePk')))
-    icm.save()
+    # get info for statements
+    missionNumber = models.Mission.objects.get(pk=getattr(row, 'contributorMissionPk'))
+    # check if information is already in database
+    icmcheck = models.ContributorMission.objects.filter(contributor_mission = models.Mission.objects.get(pk=getattr(row, 'contributorMissionPk')),
+                                                                contributor_missionPerson = models.ContributorPeople.objects.get(pk=getattr(row, 'contributorPersonPk')),
+                                                                contributor_missionRole = models.Role.objects.get(pk=getattr(row, 'contributorPersonRolePk')))
+    if(icmcheck.exists()):
+        print(f"Contributor information for mission {missionNumber.mission_number} and glider {missionNumber.mission_platformName.platform_serial} in database")
+    else:
+        print(f"Adding contributor information for mission {missionNumber.mission_number} and glider {missionNumber.mission_platformName.platform_serial}")
+        icm = models.ContributorMission(contributor_mission = models.Mission.objects.get(pk=getattr(row, 'contributorMissionPk')),
+                                        contributor_missionPerson = models.ContributorPeople.objects.get(pk=getattr(row, 'contributorPersonPk')),
+                                        contributor_missionRole = models.Role.objects.get(pk=getattr(row, 'contributorPersonRolePk')))
+        icm.save()

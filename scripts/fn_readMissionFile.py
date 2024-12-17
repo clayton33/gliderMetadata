@@ -18,13 +18,13 @@ def readMissionFile():
                                           "Science every # yos": "scienceEveryNumberOfYos"})
     # remove special characters from column names
     # space
-    dataframe.columns = dataframe.columns.str.replace(r' ', r'', regex=True)
+    dataframe.columns = dataframe.columns.str.replace(' ', '', regex=True)
     # '/'
-    dataframe.columns = dataframe.columns.str.replace(r'/', '', regex=True)
+    dataframe.columns = dataframe.columns.str.replace('/', '', regex=True)
     # '('
-    dataframe.columns = dataframe.columns.str.replace(r'(', '', regex=True)
+    dataframe.columns = dataframe.columns.str.replace(r'[(]', '', regex=True)
     # ')'
-    dataframe.columns = dataframe.columns.str.replace(r')', '', regex=True)
+    dataframe.columns = dataframe.columns.str.replace(r'[)]', '', regex=True)
     # Clean up and remove unnecessary rows
     # 1. Remove rows where 'annualMissionIndex' is NaN
     dataframe = dataframe.dropna(subset=['annualMissionIndex'])

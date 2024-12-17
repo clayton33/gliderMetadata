@@ -152,8 +152,17 @@ instrumentDf = pd.DataFrame(list(zip(instrumentMissionPk, instrumentPk,
 
 # initialize InstrumentMission
 for row in instrumentDf.itertuples():
-    iim = models.InstrumentMission(instrument_mission = models.Mission.objects.get(pk=getattr(row, 'instrumentMissionPk')),
+    # check if it's already in database
+    iimcheck = models.InstrumentMission.objects.filter(instrument_mission = models.Mission.objects.get(pk=getattr(row, 'instrumentMissionPk')),
                                    instrument_calibration = models.InstrumentCalibration.objects.get(pk=getattr(row, 'instrumentPk')),
                                    instrument_warmUp = getattr(row, 'instrumentWarmUp'),
                                    instrument_samplingRate = getattr(row, 'instrumentSamplingRate'))
-    iim.save()
+    if iimcheck.exists():
+        print(f"Instruments exists for mission")
+    else:
+        print(f"Adding instruments")
+        iim = models.InstrumentMission(instrument_mission = models.Mission.objects.get(pk=getattr(row, 'instrumentMissionPk')),
+                                       instrument_calibration = models.InstrumentCalibration.objects.get(pk=getattr(row, 'instrumentPk')),
+                                       instrument_warmUp = getattr(row, 'instrumentWarmUp'),
+                                       instrument_samplingRate = getattr(row, 'instrumentSamplingRate'))
+        iim.save()

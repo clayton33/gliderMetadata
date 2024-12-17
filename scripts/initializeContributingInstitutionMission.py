@@ -52,7 +52,17 @@ for row in df.itertuples():
         ins = models.Institute.objects.filter(institute_name=x[0]).first()
         # get pk of role
         r = models.Role.objects.filter(role_name=x[1]).first()
-        ci = models.ContributingInstitutionMission(contributingInstitution_mission=models.Mission.objects.get(pk=missionQ.pk),
-                                                   contributingInstitution_missionRole=models.Role.objects.get(pk=r.pk),
-                                                   contributingInstitution_missionInstitute=models.Institute.objects.get(pk=ins.pk))
-        ci.save()
+        # check if it exists yet
+        cicheck = models.ContributingInstitutionMission.objects.filter(contributingInstitution_mission=models.Mission.objects.get(pk=missionQ.pk),
+                                                                       contributingInstitution_missionRole=models.Role.objects.get(pk=r.pk),
+                                                                       contributingInstitution_missionInstitute=models.Institute.objects.get(pk=ins.pk))
+        if(cicheck.exists()):
+            print(
+                f"Contributor information for mission {missionQ.mission_number} and glider {missionQ.mission_platformName.platform_serial} in database")
+        else:
+            print(
+                f"Adding information for mission {missionQ.mission_number} and glider {missionQ.mission_platformName.platform_serial} in database")
+            ci = models.ContributingInstitutionMission(contributingInstitution_mission=models.Mission.objects.get(pk=missionQ.pk),
+                                                       contributingInstitution_missionRole=models.Role.objects.get(pk=r.pk),
+                                                       contributingInstitution_missionInstitute=models.Institute.objects.get(pk=ins.pk))
+            ci.save()
