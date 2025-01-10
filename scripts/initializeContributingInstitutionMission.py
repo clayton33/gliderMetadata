@@ -34,9 +34,9 @@ df['platformNamePk'] = platformNamePk
 for row in df.itertuples():
     missionQ = models.Mission.objects.filter(mission_platformName=getattr(row, 'platformNamePk'),
                                              mission_number=getattr(row, 'missionNumber')).first()
-    # define institution and role
-    # halifax line (HL) and passive acoustic monitoring in emerald basin (PAM EB)
-    if getattr(row, 'Missiontype') in ['HL', 'PAM EB']:
+        # define institution and role
+        # halifax line (HL) and passive acoustic monitoring in emerald basin (PAM EB)
+    if getattr(row, 'Missiontype') in ['HL', 'PAM EB', 'Overnight']:
         cim=[['Bedford Institute of Oceanography', 'Operator'],
             ['Bedford Institute of Oceanography', 'PI']]
     # bonavista (BBL)
