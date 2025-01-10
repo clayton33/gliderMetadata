@@ -97,7 +97,7 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
     # 4. Get contributor information
     cQ = models.ContributorMission.objects.filter(contributor_mission=mQ.first().pk)
     if not (cQ.exists()):
-        print(f"No contributor entries for glider with serial number {platform_serial} and"
+        print(f"No contributor entries for glider with serial number {platform_serial} and "
               f"mission {mission_number} in database. Please contact developer or enter information"
               f"into database.")
         return
@@ -307,9 +307,11 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
         # gliderDeviceName (this is the type)
         gliderDeviceDictName = i.instrument_calibrationSerial.instrument_serialNumberModel.instrument_modelType.instrument_type
         # if there are more than 1 type of instrument, add number to the dict name
+        n = None
         if gliderDeviceDictName in list(gliderDeviceDict.keys()):
             # find how many are in there
             nreps = [bool(re.search(gliderDeviceDictName, x)) for x in list(gliderDeviceDict.keys())].count(True)
+            n = nreps
             # add number to the device name
             gliderDeviceDictName = gliderDeviceDictName + str((nreps + 1))
         profileVariablesDictName = 'instrument_' + gliderDeviceDictName
@@ -387,8 +389,6 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                                                           calibration_sourceVars=calibration_sourceVars)
             profileVariablesDict[profileVariablesDictName].update(calibration_coefficients=calibration_coefficients,
                                                                   calibration_sourceVars=calibration_sourceVars)
-
-
         # get instrument variables
         instrumentModel = instrument.instrument_calibration.instrument_calibrationSerial.instrument_serialNumberModel.pk
         ivQ = models.InstrumentVariable.objects.filter(instrument_variablePlatformCompany=pcQ.first().pk,
@@ -447,14 +447,21 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
             if instrumentVariable.instrument_variableSourceName in ['GPCTD_PRESSURE', 'LEGATO_PRESSURE']:
                 replaceName = instrumentVariableDictName
                 instrumentVariableDictName = 'pressure'
-            # check if the dict name exists, if so, add a number to it.
-            if instrumentVariableDictName in list(netcdfVariablesDict.keys()):
-                # find how many are in there
-                nreps = [bool(re.search(instrumentVariableDictName, x)) for x in
-                         list(netcdfVariablesDict.keys())].count(
-                    True)
-                # add number to the device name
-                instrumentVariableDictName = instrumentVariableDictName + str((nreps + 1))
+            # if the device already exists, automatically add nreps (defined above) to
+            # the instrumentVariableDictName ?
+            if not(n is None):
+                instrumentVariableDictName = instrumentVariableDictName + str((n + 1))
+                # add to replaceName,too
+                if not(replaceName is None):
+                    replaceName = replaceName + str((n + 1))
+            # # check if the dict name exists, if so, add a number to it.
+            # if instrumentVariableDictName in list(netcdfVariablesDict.keys()):
+            #     # find how many are in there
+            #     nreps = [bool(re.search(instrumentVariableDictName, x)) for x in
+            #              list(netcdfVariablesDict.keys())].count(
+            #         True)
+            #     # add number to the device name
+            #     instrumentVariableDictName = instrumentVariableDictName + str((nreps + 1))
             if instrumentVariableDictName == 'conductivity':
                 units = 'S m-1'  # GPCTD, is LEGATO 'mS cm-1' ?
             netcdfVariablesDict[instrumentVariableDictName] = dict(
