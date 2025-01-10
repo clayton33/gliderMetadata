@@ -50,6 +50,51 @@ def initiate_VariableNERCStandard():
                                          )
         vn.save()
 
+def initiate_Variable():
+    file = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_variable_mod.csv", mode="r")
+    df = pd.read_csv(file)
+    # cf variable
+    filevcs = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_variablecfstandard.csv", mode="r")
+    dfvcs = pd.read_csv(filevcs)
+    # cf unit
+    filevcu = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_unitcfstandard.csv", mode="r")
+    dfvcu = pd.read_csv(filevcu)
+    # nerc variable
+    filevns = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_variablenercstandard.csv",
+                        mode="r")
+    dfvns = pd.read_csv(filevns)
+    for row in df.itertuples():
+        # cfVariable
+        dfvcssub = dfvcs[dfvcs['id'] == getattr(row, 'variable_cfName_id')]
+        if dfvcssub.empty:
+            vcs = None
+        else:
+            dfvcssub = dfvcssub.iloc[0]
+            vcs = models.VariableCFStandard.objects.get(variable_standardName=dfvcssub['variable_standardName'])
+        # cfUnit
+        dfvcusub = dfvcu[dfvcu['id'] == getattr(row, 'variable_cfUnit_id')]
+        if dfvcusub.empty:
+            vcu = None
+        else:
+            dfvcusub = dfvcusub.iloc[0]
+            vcu = models.UnitCFStandard.objects.get(variable_unit=dfvcusub['variable_unit'])
+        # nercVariable
+        dfvnssub = dfvns[dfvns['id'] == getattr(row, 'variable_nercName_id')]
+        if dfvnssub.empty:
+            vns = None
+        else:
+            dfvnssub = dfvnssub.iloc[0]
+            vns = models.VariableNERCStandard.objects.get(variable_nerc_variableName=dfvnssub['variable_nerc_variableName'])
+        iv = models.Variable(variable_parameterName = checkNa(getattr(row, 'variable_parameterName')),
+                             variable_longName = checkNa(getattr(row, 'variable_longName')),
+                             variable_parameterNameComment = checkNa(getattr(row, 'variable_parameterNameComment')),
+                             variable_cfName = vcs,
+                             variable_cfUnit = vcu,
+                             variable_nercName = vns)
+        iv.save()
+
+
+
 def initiate_InstrumentVariable():
     file = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_instrumentvariable.csv", mode="r")
     df = pd.read_csv(file)
@@ -158,5 +203,6 @@ def initiate_PlatformVariable():
 # initiate_UnitCFStandard()
 # initiate_VariableCFStandard()
 # initiate_VariableNERCStandard()
+initiate_Variable()
 # initiate_InstrumentVariable()
 # initiate_PlatformVariable()
