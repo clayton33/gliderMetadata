@@ -1,0 +1,12 @@
+id,variable_parameterName,variable_longName,variable_parameterNameComment,variable_cfName_id,variable_cfUnit_id,variable_nercName_id
+94,profile_id,Profile ID,ioosProfile,null,null,null
+95,profile_time,Profile Center Time,ioosProfile,20,null,null
+96,profile_lat,Profile Center Latitude,ioosProfile,21,27,null
+97,profile_lon,Profile Center Longitude,ioosProfile,22,28,null
+98,time_uv,Depth-Averaged Time,ioosProfile,null,null,null
+99,lat_uv,Depth-Averaged Latitude,ioosProfile,21,27,null
+100,lon_uv,Depth-Averaged Longitude,ioosProfile,22,28,null
+101,u,Depth-Averaged Eastward Sea Water Velocity,ioosProfile,32,30,null
+102,v,Depth-Averaged Northward Sea Water Velocity,ioosProfile,33,30,null
+106,profile_time_start,Profile Start Time,ioosProfile,null,null,null
+107,profile_time_end,Profile End Time,ioosProfile,null,null,null
