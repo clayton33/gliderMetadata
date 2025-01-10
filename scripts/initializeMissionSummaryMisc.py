@@ -10,8 +10,9 @@ def convert_date(date):
 
 df = rmf.readMissionFile()
 
-# Doing the 'BBL' missions, so subset df to those missions
-df = df[df['Missiontype'] == 'BBL']
+# Only missions that don't have a defined type (as of 20250106 only other mission type is 'Overnight')
+#   so subset df to those missions
+df = df[[not(x in ['HL', 'BBL', 'PAM EB']) for x in df['Missiontype']]]
 
 # get pk value of the platform to find mission pk
 # mission_platformName
@@ -35,6 +36,6 @@ for row in df.itertuples():
     missionQ = models.Mission.objects.filter(mission_platformName=getattr(row, 'platformNamePk'),
                                              mission_number=getattr(row, 'missionNumber')).first()
     im = models.Mission.objects.get(pk=missionQ.pk) # not sure if this is redundant
-    im.mission_summary = 'Bonavista line.'
+    im.mission_summary = 'DFO COGG.'
     im.save()
 
