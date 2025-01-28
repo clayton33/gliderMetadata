@@ -577,8 +577,8 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                         # institute (dfo) - gliderName + gliderSerial - deploymentDate
                         deployment_start=mQ.first().mission_deploymentDate,
                         deployment_end=mQ.first().mission_recoveryDate,
-                        deployment_vessel=mQ.first().mission_deploymentVessel.vessel_name,
-                        recovery_vessel=mQ.first().mission_recoveryVessel.vessel_name,
+                        deployment_vessel=mQ.first().mission_deploymentVessel.vessel_name if mQ.first().mission_deploymentVessel != None else "",
+                        recovery_vessel=mQ.first().mission_recoveryVessel.vessel_name if mQ.first().mission_recoveryVessel != None else "",
                         featureType='trajectory',  # fixed value
                         format_version='IOOS_Glider_NetCDF_v2.0.nc', # fixed value
                         glider_name=psQ.first().platform_name, # pyglider
