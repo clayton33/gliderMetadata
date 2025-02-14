@@ -462,8 +462,10 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
             #         True)
             #     # add number to the device name
             #     instrumentVariableDictName = instrumentVariableDictName + str((nreps + 1))
-            if instrumentVariableDictName == 'conductivity':
-                units = 'S m-1'  # GPCTD, is LEGATO 'mS cm-1' ?
+            if instrumentVariable.instrument_variableSourceName in ['GPCTD_CONDUCTIVITY']:
+                units = 'S m-1'
+            if instrumentVariable.instrument_variableSourceName in ['LEGATO_CONDUCTIVITY']:
+                units = 'mS cm-1'
             netcdfVariablesDict[instrumentVariableDictName] = dict(
                 source=instrumentVariable.instrument_variableSourceName,
                 coordinates='time depth latitude longitude',
