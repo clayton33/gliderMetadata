@@ -3,25 +3,34 @@ import pandas as pd
 from gliderMetadataApp import models
 
 
-def initiate_Institute():
-    file = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_institute.csv", mode="r")
+def initiate_Institute(path):
+    filename = "gliderMetadataApp_institute.csv"
+    pathfile = path + '/' + filename
+    file = io.FileIO(file=pathfile, mode="r")
     df = pd.read_csv(file)
     for row in df.itertuples():
         ins = models.Institute(institute_name=getattr(row, "institute_name"),
                                institute_vocabulary=getattr(row, "institute_vocabulary"))
         ins.save()
 
-def initiate_ArgosTagPTT():
-    file = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_argostagptt.csv", mode="r")
+def initiate_ArgosTagPTT(path):
+    filename = "gliderMetadataApp_argostagptt.csv"
+    pathfile = path + '/' + filename
+    file = io.FileIO(file=pathfile, mode="r")
     df = pd.read_csv(file)
     for row in df.itertuples():
         at =  models.ArgosTagPTT(argosTag_PTT=getattr(row, 'argosTag_PTT'))
         at.save()
 
-def initiate_ArgosTagSerialNumber():
-    file = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_argostagserialnumber.csv", mode="r")
+def initiate_ArgosTagSerialNumber(path):
+    filename = "gliderMetadataApp_argostagserialnumber.csv"
+    pathfile = path + '/' + filename
+    file = io.FileIO(file=pathfile, mode="r")
     df = pd.read_csv(file)
-    file2 = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_argostagptt.csv", mode="r")
+    # argos ptt
+    filename2 = "gliderMetadataApp_argostagptt.csv"
+    pathfile2 = path + '/' + filename2
+    file2 = io.FileIO(file=pathfile2, mode="r")
     df2 = pd.read_csv(file2)
     for row in df.itertuples():
         df2sub = df2[df2["id"] == getattr(row, "argosTag_PTTNumber_id")].iloc[0]
@@ -33,15 +42,11 @@ def initiate_ArgosTagSerialNumber():
 
 
 
-def initiate_Vessel():
-    file = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_vessel.csv", mode="r")
+def initiate_Vessel(path):
+    filename = "gliderMetadataApp_vessel.csv"
+    pathfile = path + '/' + filename
+    file = io.FileIO(file=pathfile, mode="r")
     df = pd.read_csv(file)
     for row in df.itertuples():
         ve = models.Vessel(vessel_name=getattr(row, "vessel_name"))
         ve.save()
-
-
-# initiate_Institute()
-# initiate_ArgosTagPTT()
-# initiate_ArgosTagSerialNumber()
-# initiate_Vessel()

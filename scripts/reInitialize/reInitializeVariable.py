@@ -5,18 +5,24 @@ from gliderMetadataApp import models
 def checkNa(x):
     return None if pd.isna(x) else x
 
-def initiate_Vocabulary():
-    file = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_vocabulary.csv", mode="r")
+def initiate_Vocabulary(path):
+    filename = "gliderMetadataApp_vocabulary.csv"
+    pathfile = path + '/' + filename
+    file = io.FileIO(file=pathfile, mode="r")
     df = pd.read_csv(file)
     for row in df.itertuples():
         v = models.Vocabulary(vocabulary_name=getattr(row, 'vocabulary_name'),
                               vocabulary_note=getattr(row, 'vocabulary_note'))
         v.save()
 
-def initiate_UnitCFStandard():
-    file = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_unitcfstandard.csv", mode="r")
+def initiate_UnitCFStandard(path):
+    filename = "gliderMetadataApp_unitcfstandard.csv"
+    pathfile = path + '/' + filename
+    file = io.FileIO(file=pathfile, mode="r")
     df = pd.read_csv(file)
-    filev = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_vocabulary.csv", mode="r")
+    filenamev = "gliderMetadataApp_vocabulary.csv"
+    pathfilev = path + '/' + filenamev
+    filev = io.FileIO(file=pathfilev, mode="r")
     dfv = pd.read_csv(filev)
     for row in df.itertuples():
         dfvsub = dfv[dfv['id'] == getattr(row, 'variable_nameVocabulary_id')].iloc[0]
@@ -25,10 +31,14 @@ def initiate_UnitCFStandard():
                                    variable_unit=getattr(row, 'variable_unit'))
         us.save()
 
-def initiate_VariableCFStandard():
-    file = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_variablecfstandard.csv", mode="r")
+def initiate_VariableCFStandard(path):
+    filename = "gliderMetadataApp_variablecfstandard.csv"
+    pathfile = path + '/' + filename
+    file = io.FileIO(file=pathfile, mode="r")
     df = pd.read_csv(file)
-    filev = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_vocabulary.csv", mode="r")
+    filenamev = "gliderMetadataApp_vocabulary.csv"
+    pathfilev = path + '/' + filenamev
+    filev = io.FileIO(file=pathfilev, mode="r")
     dfv = pd.read_csv(filev)
     for row in df.itertuples():
         dfvsub = dfv[dfv['id'] == getattr(row, 'variable_nameVocabulary_id')].iloc[0]
@@ -37,8 +47,10 @@ def initiate_VariableCFStandard():
                                        variable_standardName=getattr(row, 'variable_standardName'))
         vs.save()
 
-def initiate_VariableNERCStandard():
-    file = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_variablenercstandard.csv", mode="r")
+def initiate_VariableNERCStandard(path):
+    filename = "gliderMetadataApp_variablenercstandard.csv"
+    pathfile = path + '/' + filename
+    file = io.FileIO(file=pathfile, mode="r")
     df = pd.read_csv(file)
     for row in df.itertuples():
         vn = models.VariableNERCStandard(variable_nerc_unit=getattr(row, 'variable_nerc_unit'),
@@ -50,18 +62,25 @@ def initiate_VariableNERCStandard():
                                          )
         vn.save()
 
-def initiate_Variable():
-    file = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_variable_mod.csv", mode="r")
+def initiate_Variable(path):
+    filename = "gliderMetadataApp_variable_mod.csv"
+    pathfile = path + '/' + filename
+    file = io.FileIO(file=pathfile, mode="r")
     df = pd.read_csv(file)
     # cf variable
-    filevcs = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_variablecfstandard.csv", mode="r")
+    filenamevcs = "gliderMetadataApp_variablecfstandard.csv"
+    pathfilevcs = path + '/' + filenamevcs
+    filevcs = io.FileIO(file=pathfilevcs, mode="r")
     dfvcs = pd.read_csv(filevcs)
     # cf unit
-    filevcu = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_unitcfstandard.csv", mode="r")
+    filenamevcu = "gliderMetadataApp_unitcfstandard.csv"
+    pathfilevcu = path + '/' + filenamevcu
+    filevcu = io.FileIO(file=pathfilevcu, mode="r")
     dfvcu = pd.read_csv(filevcu)
     # nerc variable
-    filevns = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_variablenercstandard.csv",
-                        mode="r")
+    filenamevns = "gliderMetadataApp_variablenercstandard.csv"
+    pathfilevns = path + '/' + filenamevns
+    filevns = io.FileIO(file=pathfilevns, mode="r")
     dfvns = pd.read_csv(filevns)
     for row in df.itertuples():
         # cfVariable
@@ -95,20 +114,30 @@ def initiate_Variable():
 
 
 
-def initiate_InstrumentVariable():
-    file = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_instrumentvariable.csv", mode="r")
+def initiate_InstrumentVariable(path):
+    filename = "gliderMetadataApp_instrumentvariable.csv"
+    pathfile = path + '/' + filename
+    file = io.FileIO(file=pathfile, mode="r")
     df = pd.read_csv(file)
     # cf variable
-    filevcs = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_variablecfstandard.csv", mode="r")
+    filenamevcs = "gliderMetadataApp_variablecfstandard.csv"
+    pathfilevcs = path + '/' + filenamevcs
+    filevcs = io.FileIO(file=pathfilevcs, mode="r")
     dfvcs = pd.read_csv(filevcs)
     # nerc variable
-    filevns = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_variablenercstandard.csv", mode="r")
+    filenamevns = "gliderMetadataApp_variablenercstandard.csv"
+    pathfilevns = path + '/' + filenamevns
+    filevns = io.FileIO(file=pathfilevns, mode="r")
     dfvns = pd.read_csv(filevns)
     # instrument model
-    fileim = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_instrumentmodel.csv", mode="r")
+    filenameim = "gliderMetadataApp_instrumentmodel.csv"
+    pathfileim = path + '/' + filenameim
+    fileim = io.FileIO(file=pathfileim, mode="r")
     dfim = pd.read_csv(fileim)
     # platform company
-    filepc = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_platformcompany.csv", mode="r")
+    filenamepc = "gliderMetadataApp_platformcompany.csv"
+    pathfilepc = path + '/' + filenamepc
+    filepc = io.FileIO(file=pathfilepc, mode="r")
     dfpc = pd.read_csv(filepc)
     for row in df.itertuples():
         ivcheck = models.InstrumentVariable.objects.filter(instrument_variableSourceName=getattr(row, 'instrument_variableSourceName'))
@@ -162,17 +191,25 @@ def initiate_InstrumentVariable():
                 f"There is already a variable with name {ivcheck.first().instrument_variableSourceName}, "
                 f"proceeding to next variable.")
 
-def initiate_PlatformVariable():
-    file = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_platformvariable.csv", mode="r")
+def initiate_PlatformVariable(path):
+    filename = "gliderMetadataApp_platformvariable.csv"
+    pathfile = path + '/' + filename
+    file = io.FileIO(file=pathfile, mode="r")
     df = pd.read_csv(file)
     # cf variable
-    filevcs = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_variablecfstandard.csv", mode="r")
+    filenamevcs = "gliderMetadataApp_variablecfstandard.csv"
+    pathfilevcs = path + '/' + filenamevcs
+    filevcs = io.FileIO(file=pathfilevcs, mode="r")
     dfvcs = pd.read_csv(filevcs)
     # nerc variable
-    filevns = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_variablenercstandard.csv", mode="r")
+    filenamevns = "gliderMetadataApp_variablenercstandard.csv"
+    pathfilevns = path + '/' + filenamevns
+    filevns = io.FileIO(file=pathfilevns, mode="r")
     dfvns = pd.read_csv(filevns)
     # platform company
-    filepc = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_platformcompany.csv", mode="r")
+    filenamepc = "gliderMetadataApp_platformcompany.csv"
+    pathfilepc = path + '/' + filenamepc
+    filepc = io.FileIO(file=pathfilepc, mode="r")
     dfpc = pd.read_csv(filepc)
     for row in df.itertuples():
         # cfVariable
@@ -198,11 +235,3 @@ def initiate_PlatformVariable():
                                      platform_variableSourceName=checkNa(getattr(row, 'platform_variableSourceName')),
                                      platform_variableSourceUnits=checkNa(getattr(row, 'platform_variableSourceUnits')))
         pv.save()
-
-# initiate_Vocabulary()
-# initiate_UnitCFStandard()
-# initiate_VariableCFStandard()
-# initiate_VariableNERCStandard()
-initiate_Variable()
-# initiate_InstrumentVariable()
-# initiate_PlatformVariable()

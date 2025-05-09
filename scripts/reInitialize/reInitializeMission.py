@@ -5,39 +5,59 @@ from gliderMetadataApp import models
 def checkNa(x):
     return None if pd.isna(x) else x
 
-def initiate_Mission():
-    file = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_mission.csv", mode="r")
+def initiate_Mission(path):
+    filename = "gliderMetadataApp_mission.csv"
+    pathfile = path + '/' + filename
+    file = io.FileIO(file=filename, mode="r")
     df = pd.read_csv(file)
     # read in files for primary key calls in mission
     # platformName
-    filepn = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_platformname.csv", mode="r")
+    filenamepn = "gliderMetadataApp_platformname.csv"
+    pathfilepn = path + '/' + filenamepn
+    filepn = io.FileIO(file=pathfilepn, mode="r")
     dfpn = pd.read_csv(filepn)
     # platformNavigationFirmware
-    filepnf = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_platformnavigationfirmware.csv",
+    filenamepnf = "gliderMetadataApp_platformnavigationfirmware.csv"
+    pathfilepnf = path + '/' + filenamepnf
+    filepnf = io.FileIO(file=pathfilepnf,
                 mode="r")
     dfpnf = pd.read_csv(filepnf)
     # platformBattery
-    filepb = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_platformbattery.csv", mode="r")
+    filenamepb = "gliderMetadataApp_platformbattery.csv"
+    pathfilepb = path + '/' + filenamepb
+    filepb = io.FileIO(file=pathfilepb, mode="r")
     dfpb = pd.read_csv(filepb)
     # platformRelease
-    filepr = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_platformrelease.csv", mode="r")
+    filenamepr = "gliderMetadataApp_platformrelease.csv"
+    pathfilepr = path + '/' + filenamepr
+    filepr = io.FileIO(file=pathfilepr, mode="r")
     dfpr = pd.read_csv(filepr)
     # platformPayload
-    filepp = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_platformpayload.csv", mode="r")
+    filenamepp = "gliderMetadataApp_platformpayload.csv"
+    pathfilepp = path + '/' + filenamepp
+    filepp = io.FileIO(file=pathfilepp, mode="r")
     dfpp = pd.read_csv(filepp)
     # platformPayloadFirmware
-    fileppf = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_platformpayloadfirmware.csv",
+    filenamepf = "gliderMetadataApp_platformpayloadfirmware.csv"
+    pathfilepf = path + '/' + filenamepf
+    fileppf = io.FileIO(file=pathfilepf,
                 mode="r")
     dfppf = pd.read_csv(fileppf)
     # vessel
-    filev = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_vessel.csv", mode="r")
+    filenamev = "gliderMetadataApp_vessel.csv"
+    pathfilev = path + '/' + filenamev
+    filev = io.FileIO(file=pathfilev, mode="r")
     dfv = pd.read_csv(filev)
     # argosTagSerialNumber (do I need PTT as well ?)
-    fileatsn = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_argostagserialnumber.csv",
+    filenameatsn = "gliderMetadataApp_argostagserialnumber.csv"
+    pathfileatsn = path + '/' + filenameatsn
+    fileatsn = io.FileIO(file=pathfileatsn,
                  mode="r")
     dfatsn = pd.read_csv(fileatsn)
     # institute
-    filei = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_institute.csv", mode="r")
+    filenamei = "gliderMetadataApp_institute.csv"
+    pathfilei = path + '/' + filenamei
+    filei = io.FileIO(file=pathfilei, mode="r")
     dfi = pd.read_csv(filei)
     for row in df.itertuples():
         # get pk's
@@ -132,5 +152,3 @@ def initiate_Mission():
             print(
                 f"There is already a mission for glider {imQ.first().mission_platformName.platform_name} mission {getattr(row, 'mission_number')}, "
                 f"proceeding to next mission.")
-
-initiate_Mission()

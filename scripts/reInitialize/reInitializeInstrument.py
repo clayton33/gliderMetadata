@@ -3,28 +3,40 @@ import pandas as pd
 from gliderMetadataApp import models
 
 
-def initiate_InstrumentMake():
-    file = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_instrumentmake.csv", mode="r")
+def initiate_InstrumentMake(path):
+    filename = "gliderMetadataApp_instrumentmake.csv"
+    pathfile = path + '/' + filename
+    file = io.FileIO(file=pathfile, mode="r")
     df = pd.read_csv(file)
     for row in df.itertuples():
         im = models.InstrumentMake(instrument_make=getattr(row, "instrument_make"))
         im.save()
 
 
-def initiate_InstrumentType():
-    file = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_instrumenttype.csv", mode="r")
+def initiate_InstrumentType(path):
+    filename = "gliderMetadataApp_instrumenttype.csv"
+    pathfile = path + '/' + filename
+    file = io.FileIO(file=filename, mode="r")
     df = pd.read_csv(file)
     for row in df.itertuples():
         it = models.InstrumentType(instrument_type=getattr(row, "instrument_type"))
         it.save()
 
 
-def initiate_InstrumentModel():
-    file = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_instrumentmodel.csv", mode="r")
+def initiate_InstrumentModel(path):
+    filename = "gliderMetadataApp_instrumentmodel.csv"
+    pathfile = path + '/' + filename
+    file = io.FileIO(file=pathfile, mode="r")
     df = pd.read_csv(file)
-    fileim = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_instrumentmake.csv", mode="r")
+    # instrument make
+    filenameim = "gliderMetadataApp_instrumentmake.csv"
+    pathfileim = path + '/' + filenameim
+    fileim = io.FileIO(file=pathfileim, mode="r")
     dfim = pd.read_csv(fileim)
-    fileit = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_instrumenttype.csv", mode="r")
+    # instrument type
+    filenameit = "gliderMetadataApp_instrumenttype.csv"
+    pathfileit = path + '/' + filenameit
+    fileit = io.FileIO(file=pathfileit, mode="r")
     dfit = pd.read_csv(fileit)
     for row in df.itertuples():
         dfimsub = dfim[dfim['id'] == getattr(row, 'instrument_modelMake_id')].iloc[0]
@@ -38,12 +50,20 @@ def initiate_InstrumentModel():
         im.save()
 
 
-def initiate_InstrumentSerialNumber():
-    file = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_instrumentserialnumber.csv", mode="r")
+def initiate_InstrumentSerialNumber(path):
+    filename = "gliderMetadataApp_instrumentserialnumber.csv"
+    pathfile = path + '/' + filename
+    file = io.FileIO(file=pathfile, mode="r")
     df = pd.read_csv(file)
-    fileim = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_instrumentmodel.csv", mode="r")
+    # instrument model
+    filenameim = "gliderMetadataApp_instrumentmodel.csv"
+    pathfileim = path + '/' + filenameim
+    fileim = io.FileIO(file=pathfileim, mode="r")
     dfim = pd.read_csv(fileim)
-    filepn = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_platformname.csv", mode="r")
+    # platform name
+    filenamepn = "gliderMetadataApp_platformname.csv"
+    pathfilepn = path + '/' + filenamepn
+    filepn = io.FileIO(file=pathfilepn, mode="r")
     dfpn = pd.read_csv(filepn)
     for row in df.itertuples():
         dfimsub = dfim[dfim['id'] == getattr(row, 'instrument_serialNumberModel_id')].iloc[0]
@@ -56,11 +76,15 @@ def initiate_InstrumentSerialNumber():
         isn.save()
 
 
-def initiate_InstrumentCalibration():
-    file = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_instrumentcalibration.csv", mode="r")
+def initiate_InstrumentCalibration(path):
+    filename = "gliderMetadataApp_instrumentcalibration.csv"
+    pathfile = path + '/' + filename
+    file = io.FileIO(file=pathfile, mode="r")
     df = pd.read_csv(file)
     # not sure if I should get instrument_serialNumberModel as well...
-    fileisn = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_instrumentserialnumber.csv", mode="r")
+    filenameisn = "gliderMetadataApp_instrumentserialnumber.csv"
+    pathfileisn = path + '/' + filenameisn
+    fileisn = io.FileIO(file=pathfileisn, mode="r")
     dfisn = pd.read_csv(fileisn)
     # format instrument_calibrationDate
     # df['instrument_calibrationDate'] = pd.to_datetime(df['instrument_calibrationDate'], format='"%Y-%m-%d"')
@@ -74,15 +98,21 @@ def initiate_InstrumentCalibration():
                                           instrument_calibrationDateNotes=getattr(row, "instrument_calibrationDateNotes"))
         ic.save()
 
-def initiate_InstrumentMission():
-    file = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_instrumentmission.csv", mode="r")
+def initiate_InstrumentMission(path):
+    filename = "gliderMetadataApp_instrumentmission.csv"
+    pathfile = path + '/' + filename
+    file = io.FileIO(file=pathfile, mode="r")
     df = pd.read_csv(file)
     # calibration
-    fileic = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_instrumentcalibration.csv",
+    filenameic = "gliderMetadataApp_instrumentcalibration.csv"
+    pathfileic = path + '/' + filenameic
+    fileic = io.FileIO(file=pathfileic,
                         mode="r")
     dfic = pd.read_csv(fileic)
     # mission
-    filem = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_mission.csv", mode="r")
+    filenamem = "gliderMetadataApp_mission.csv"
+    pathfilem = path + '/' + filenamem
+    filem = io.FileIO(file=pathfilem, mode="r")
     dfm = pd.read_csv(filem)
     for row in df.itertuples():
         dficsub = dfic[dfic['id'] == getattr(row, 'instrument_calibration_id')].iloc[0]
@@ -98,11 +128,15 @@ def initiate_InstrumentMission():
         im.save()
 
 
-def initiate_InstrumentSeaBird43FOxygenCalibrationCoefficients():
-    file = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_instrumentseabird43foxygencalibrationcoefficients.csv", mode="r")
+def initiate_InstrumentSeaBird43FOxygenCalibrationCoefficients(path):
+    filename = "gliderMetadataApp_instrumentseabird43foxygencalibrationcoefficients.csv"
+    pathfile = path + '/' + filename
+    file = io.FileIO(file=pathfile, mode="r")
     df = pd.read_csv(file)
     # calibration
-    fileic = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_instrumentcalibration.csv",
+    filenameic = "gliderMetadataApp_instrumentcalibration.csv"
+    pathfileic = path + '/' + filenameic
+    fileic = io.FileIO(file=pathfileic,
                        mode="r")
     dfic = pd.read_csv(fileic)
     for row in df.itertuples():
@@ -118,15 +152,3 @@ def initiate_InstrumentSeaBird43FOxygenCalibrationCoefficients():
                                                                          calibrationSeaBird43F_C=getattr(row, 'calibrationSeaBird43F_C'),
                                                                          calibrationSeaBird43F_Enom=getattr(row, 'calibrationSeaBird43F_Enom'))
         iocc.save()
-
-
-# commented out calls to functions indicates that the tables were initialized
-# note that if the database has to be re-initialized, some care should be taken
-# for the primary key call (see comments next to applicable functions)
-# initiate_InstrumentMake()
-# initiate_InstrumentType()
-# initiate_InstrumentModel() # primary key to make and type and original platform
-# initiate_InstrumentSerialNumber() # primary key call to model
-# initiate_InstrumentCalibration() # primary key call to serial number
-# initiate_InstrumentMission() # primary key call to instrumentCalibration and Mission
-initiate_InstrumentSeaBird43FOxygenCalibrationCoefficients() # primary key call to InstrumentCalibration

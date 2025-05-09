@@ -75,10 +75,12 @@ class PlatformRelease(models.Model):
 
 class InstrumentMake(models.Model):
     instrument_make = models.CharField(max_length=50)
+    instrument_vocabulary = models.CharField(max_length=100, null = True)
 
 
 class InstrumentType(models.Model):
     instrument_type = models.CharField(max_length=50)
+    instrument_vocabulary = models.CharField(max_length=100, null = True)
 
 
 class InstrumentModel(models.Model):
@@ -86,6 +88,7 @@ class InstrumentModel(models.Model):
     instrument_modelType = models.ForeignKey(InstrumentType, on_delete=models.SET_NULL, null=True)
     instrument_model = models.CharField(max_length=50)
     instrument_longname = models.CharField(max_length=100)  # should check how long they can get
+    instrument_vocabulary = models.CharField(max_length=100, null=True)
 
 
 class InstrumentSerialNumber(models.Model):

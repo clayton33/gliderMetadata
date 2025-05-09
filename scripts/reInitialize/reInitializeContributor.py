@@ -2,8 +2,10 @@ import io
 import pandas as pd
 from gliderMetadataApp import models
 
-def initiate_ContributorPeople():
-    file = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_contributorpeople.csv", mode="r")
+def initiate_ContributorPeople(path):
+    filename = "gliderMetadataApp_contributorpeople.csv"
+    pathfile = path + '/' + filename
+    file = io.FileIO(file=pathfile, mode="r")
     df = pd.read_csv(file)
     for row in df.itertuples():
         cp = models.ContributorPeople(contributor_lastName=getattr(row, 'contributor_lastName'),
@@ -11,26 +13,36 @@ def initiate_ContributorPeople():
                                       contributor_email=getattr(row, 'contributor_email'))
         cp.save()
 
-def initiate_Role():
-    file = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_role.csv", mode="r")
+def initiate_Role(path):
+    filename = "gliderMetadataApp_role.csv"
+    pathfile = path + '/' + filename
+    file = io.FileIO(file=pathfile, mode="r")
     df = pd.read_csv(file)
     for row in df.itertuples():
         r = models.Role(role_vocabulary=getattr(row, 'role_vocabulary'),
                         role_name=getattr(row, 'role_name'))
         r.save()
 
-def initiate_ContributorMission():
-    file = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_contributormission.csv", mode="r")
+def initiate_ContributorMission(path):
+    filename = "gliderMetadataApp_contributormission.csv"
+    pathfile = path + '/' + filename
+    file = io.FileIO(file=pathfile, mode="r")
     df = pd.read_csv(file)
     # only pk calls
     # contributorPeople
-    filecp = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_contributorpeople.csv", mode="r")
+    filenamecp = "gliderMetadataApp_contributorpeople.csv"
+    pathfilecp = path + '/' + filenamecp
+    filecp = io.FileIO(file=pathfilecp, mode="r")
     dfcp = pd.read_csv(filecp)
     # Role
-    filer = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_role.csv", mode="r")
+    filenamer = "gliderMetadataApp_role.csv"
+    pathfiler = path + '/' + filenamer
+    filer = io.FileIO(file=pathfiler, mode="r")
     dfr = pd.read_csv(filer)
     # Mission
-    filem = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_mission.csv", mode="r")
+    filenamem = "gliderMetadataApp_mission.csv"
+    pathfilem = path + '/' + filenamem
+    filem = io.FileIO(file=pathfilem, mode="r")
     dfm = pd.read_csv(filem)
     for row in df.itertuples():
         dfcpsub=dfcp[dfcp['id'] == getattr(row, 'contributor_missionPerson_id')].iloc[0]
@@ -46,7 +58,3 @@ def initiate_ContributorMission():
                                        contributor_missionPerson=cp,
                                        contributor_missionRole=r)
         cm.save()
-
-#initiate_ContributorPeople()
-#initiate_Role()
-#initiate_ContributorMission()

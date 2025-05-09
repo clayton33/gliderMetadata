@@ -3,14 +3,25 @@ import pandas as pd
 from gliderMetadataApp import models
 
 
-def initiate_ContributingInstitutionMission():
-    file = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_contributinginstitutionmission.csv", mode="r")
+def initiate_ContributingInstitutionMission(path):
+    filename = "gliderMetadataApp_contributinginstitutionmission.csv"
+    pathfile = path + '/' + filename
+    file = io.FileIO(file=pathfile, mode="r")
     df = pd.read_csv(file)
-    filem = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_mission.csv", mode="r")
+    # Mission
+    filenamem = "gliderMetadataApp_mission.csv"
+    pathfilem = path + '/' + filenamem
+    filem = io.FileIO(file=pathfilem, mode="r")
     dfm = pd.read_csv(filem)
-    filei = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_institute.csv", mode="r")
+    # Institute
+    filenamei = "gliderMetadataApp_institute.csv"
+    pathfilei = path + '/' + filenamei
+    filei = io.FileIO(file=pathfilei, mode="r")
     dfi = pd.read_csv(filei)
-    filer = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_role.csv", mode="r")
+    # Role
+    filenamer = "gliderMetadataApp_role.csv"
+    pathfiler = path + '/' + filenamer
+    filer = io.FileIO(file=filenamer, mode="r")
     dfr = pd.read_csv(filer)
     for row in df.itertuples():
         dfmsub = dfm[dfm['id'] == getattr(row, 'contributingInstitution_mission_id')].iloc[0]
@@ -24,5 +35,3 @@ def initiate_ContributingInstitutionMission():
                                                     contributingInstitution_missionInstitute=i,
                                                     contributingInstitution_missionRole=r)
         cim.save()
-
-initiate_ContributingInstitutionMission()

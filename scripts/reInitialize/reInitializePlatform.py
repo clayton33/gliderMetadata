@@ -2,9 +2,11 @@ import io
 import pandas as pd
 from gliderMetadataApp import models
 
-def initiate_PlatformCompany():
+def initiate_PlatformCompany(path):
     #  initialize PlatformCompany
-    file = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_platformcompany.csv", mode="r")
+    filename = "gliderMetadataApp_platformcompany.csv"
+    pathfile = path + '/' + filename
+    file = io.FileIO(file=pathfile, mode="r")
     df = pd.read_csv(file)
     for row in df.itertuples():
         print(getattr(row, "platform_company"))
@@ -13,11 +15,15 @@ def initiate_PlatformCompany():
         pc.save()
 
 
-def initiate_PlatformName():
-    file = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_platformname.csv", mode="r")
+def initiate_PlatformName(path):
+    filename = "gliderMetadataApp_platformname.csv"
+    pathfile = path + '/' + filename
+    file = io.FileIO(file=pathfile, mode="r")
     df = pd.read_csv(file)
     # b/c the pk of the reinitialized may or may not match up with the new pk, have to cross reference
-    file2 = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_platformcompany.csv", mode="r")
+    filename2 = "gliderMetadataApp_platformcompany.csv"
+    pathfile2 = path + '/' + filename2
+    file2 = io.FileIO(file=pathfile2, mode="r")
     df2 = pd.read_csv(file2)
     for row in df.itertuples():
         # have to filter based on the match between 'platform_companyId_id' in file to 'id' in file2
@@ -31,8 +37,10 @@ def initiate_PlatformName():
         pn.save()
 
 
-def initiate_PlatformNavigationFirmware():
-    file = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_platformnavigationfirmware.csv", mode="r")
+def initiate_PlatformNavigationFirmware(path):
+    filename = "gliderMetadataApp_platformnavigationfirmware.csv"
+    pathfile = path + '/' + filename
+    file = io.FileIO(file=pathfile, mode="r")
     df = pd.read_csv(file)
     for row in df.itertuples():
         pnf = models.PlatformNavigationFirmware(platform_navFirmwareVersion=getattr(row, "platform_navFirmwareVersion"),
@@ -40,10 +48,15 @@ def initiate_PlatformNavigationFirmware():
         pnf.save()
 
 
-def initiate_PlatformPayload():
-    file = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_platformpayload.csv", mode="r")
+def initiate_PlatformPayload(path):
+    filename = "gliderMetadataApp_platformpayload.csv"
+    pathfile = path + '/' + filename
+    file = io.FileIO(file=pathfile, mode="r")
     df = pd.read_csv(file)
-    file2 = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_platformname.csv", mode="r")
+    # cross reference pathform name
+    filename2 = "gliderMetadataApp_platformname.csv"
+    pathfile2 = path + '/' + filename2
+    file2 = io.FileIO(file=pathfile2, mode="r")
     df2 = pd.read_csv(file2)
     for row in df.itertuples():
         df2sub = df2[df2["id"] == getattr(row, "platform_payloadOriginalPlatform_id")].iloc[0]
@@ -55,8 +68,10 @@ def initiate_PlatformPayload():
         pp.save()
 
 
-def initiate_PlatformPayloadFirmware():
-    file = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_platformpayloadfirmware.csv", mode="r")
+def initiate_PlatformPayloadFirmware(path):
+    filename = "gliderMetadataApp_platformpayloadfirmware.csv"
+    pathfile = path + '/' + filename
+    file = io.FileIO(file=pathfile, mode="r")
     df = pd.read_csv(file)
     for row in df.itertuples():
         ppf = models.PlatformPayloadFirmware(platform_payloadFirmwareVersion=getattr(row, "platform_payloadFirmwareVersion"),
@@ -64,8 +79,10 @@ def initiate_PlatformPayloadFirmware():
         ppf.save()
 
 
-def initiate_PlatformBattery():
-    file = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_platformbattery.csv", mode="r")
+def initiate_PlatformBattery(path):
+    filename = "gliderMetadataApp_platformbattery.csv"
+    pathfile = path + '/' + filename
+    file = io.FileIO(file=pathfile, mode="r")
     df = pd.read_csv(file)
     for row in df.itertuples():
         pb = models.PlatformBattery(platform_batteryType=getattr(row, "platform_batteryType"),
@@ -73,22 +90,12 @@ def initiate_PlatformBattery():
         pb.save()
 
 
-def initiate_PlatformRelease():
-    file = io.FileIO(file=r".\initializationData\20241210reload\gliderMetadataApp_platformrelease.csv", mode="r")
+def initiate_PlatformRelease(path):
+    filename = "gliderMetadataApp_platformrelease.csv"
+    pathfile = path + '/' + filename
+    file = io.FileIO(file=pathfile, mode="r")
     df = pd.read_csv(file)
     for row in df.itertuples():
         pr = models.PlatformRelease(platform_releaseType=getattr(row, "platform_releaseType"),
                                     platform_releaseAttachMethod=getattr(row, "platform_releaseAttachMethod"))
         pr.save()
-
-
-# commented out calls to functions indicates that the tables were initialized
-# note that if the database has to be re-initialized, some care should be taken
-# for the primary key call (see comments next to applicable functions)
-# initiate_PlatformCompany()
-# initiate_PlatformName() # primary key call to PlatformCompany
-# initiate_PlatformNavigationFirmware()
-# initiate_PlatformPayload() # primary key call to PlatformName
-# initiate_PlatformPayloadFirmware()
-# initiate_PlatformBattery()
-# initiate_PlatformRelease()

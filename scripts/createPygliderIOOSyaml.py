@@ -317,12 +317,16 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
         profileVariablesDictName = 'instrument_' + gliderDeviceDictName
         # make
         make = i.instrument_calibrationSerial.instrument_serialNumberModel.instrument_modelMake.instrument_make
+        makeVocabulary = i.instrument_calibrationSerial.instrument_serialNumberModel.instrument_modelMake.instrument_vocabulary
         if make is None:
             make = ''
+            makeVocabulary = ''
         # model
         model = i.instrument_calibrationSerial.instrument_serialNumberModel.instrument_model
+        modelVocabulary = i.instrument_calibrationSerial.instrument_serialNumberModel.instrument_vocabulary
         if model is None:
             model = ''
+            modelVocabulary = ''
         # serial
         serial = i.instrument_calibrationSerial.instrument_serialNumber
         if serial is None:
@@ -346,7 +350,9 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
 
         # set dict for glider devices and instrument variables for profile variables
         gliderDeviceDict[gliderDeviceDictName] = dict(make=make,
+                                                      makeVocabulary=makeVocabulary,
                                                       model=model,
+                                                      modelVocabulary=modelVocabulary,
                                                       serial_number=serial,
                                                       long_name=long_name,
                                                       make_model=make_model,
@@ -358,7 +364,9 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                                                       comment = ' '
                                                       )
         profileVariablesDict[profileVariablesDictName] = dict(make=make,
+                                                              makeVocabulary=makeVocabulary,
                                                               model=model,
+                                                              modelVocabulary=modelVocabulary,
                                                               serial_number=serial,
                                                               long_name=long_name,
                                                               make_model=make_model,
@@ -370,7 +378,7 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                                                               comment = ' '
                                                               )
         # calibration coefficients (if applicable) 20240730, only Sea-Bird 43F
-        if make == 'Sea-Bird' and model == '43F':
+        if make == 'Sea-Bird Scientific' and model == 'SBE 43F DO':
             # use calibration pk
             ccQ = models.InstrumentSeabird43FOxygenCalibrationCoefficients.objects.get(
                 calibrationSeaBird43F_calibration=i.pk)
