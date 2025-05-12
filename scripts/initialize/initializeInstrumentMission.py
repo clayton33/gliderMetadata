@@ -41,6 +41,7 @@ instrumentAbbrev = ['GPCTD',
                     'Rinko',
                     'Ecopuck',
                     'LEGATO',
+                    'CODA',
                     'Minifluo'
                     # 'PAM' # omitting PAM for now (2023 01 24) - don't have instrument information in database
                     ]
@@ -57,7 +58,10 @@ for d in df.itertuples():
                                              mission_number=getattr(d, 'missionNumber')).first()
     for i in instrumentAbbrev:
         # get the serial number
-        serialNumberName = i + 'SN'
+        if i == 'CODA':
+            serialNumberName = i + 'sn'
+        else:
+            serialNumberName = i + 'SN'
         serialNumber = getattr(d, serialNumberName)
         if pd.isna(serialNumber):
             print(f"Serial number for {i} is {serialNumber} "
@@ -91,6 +95,9 @@ for d in df.itertuples():
             # GPCTD DO warm up is same as GPCTD
             if i == 'GPCTDDO':
                 warmUpName = 'GPCTD' + 'warmup'
+            # LEGATO CODA warm up is same as LEGATO
+            elif i == 'CODA':
+                warmUpName = 'LEGATO' + 'warmup'
             else :
                 warmUpName = i + 'warmup'
         # get samplingrate
@@ -98,7 +105,7 @@ for d in df.itertuples():
             samplingRateName = 'Samplingrate' + 'GPCTD' + 's'
         elif i == 'Ecopuck':
             samplingRateName = 'Samplingrate' + 'Eco' + 's'
-        elif i == 'LEGATO':
+        elif i in ['LEGATO', 'CODA']:
             samplingRateName = 'Samplingrate' + 'Legato' + 's'
         else :
             samplingRateName = 'Samplingrate' + i + 's'
