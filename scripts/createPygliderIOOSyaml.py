@@ -305,7 +305,7 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
         # get glider_devices and instrument types for profile_variables
         i = instrument.instrument_calibration  # this is just to make the below a bit easier
         # gliderDeviceName (this is the type)
-        gliderDeviceDictName = i.instrument_calibrationSerial.instrument_serialNumberModel.instrument_modelType.instrument_type
+        gliderDeviceDictName = re.sub("\\s", "", i.instrument_calibrationSerial.instrument_serialNumberModel.instrument_modelType.instrument_type)
         # if there are more than 1 type of instrument, add number to the dict name
         n = None
         if gliderDeviceDictName in list(gliderDeviceDict.keys()):
