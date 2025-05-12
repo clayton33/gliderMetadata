@@ -10,7 +10,7 @@ def initiatecalibrationSeabird43F():
         print(f"Checking for Seabird 43F Oxygen sensor with serial number {getattr(row, 'serialNumber')} and"
               f" calibration date {getattr(row, 'calibrationDate')}")
         # get pk from instrumentModel for instrument_model = '43F'
-        instModel = models.InstrumentModel.objects.filter(instrument_model = '43F')
+        instModel = models.InstrumentModel.objects.filter(instrument_model = 'SBE 43F DO')
         # get pk from instrumentSerialNumber using above pk and the row.serialNumber
         instSN = models.InstrumentSerialNumber.objects.filter(instrument_serialNumberModel = instModel.first().pk,
                                                               instrument_serialNumber = '"' + getattr(row, 'serialNumber') + '"')
