@@ -36,6 +36,7 @@ def readMissionFile():
     dataframe['Rinkocaldate'] = convert_date(dataframe['Rinkocaldate'])
     # dataframe['Ecopuckcaldate'] = convert_date(dataframe['Ecopuckcaldate']) # already in format
     dataframe['LEGATOcaldate'] = convert_date(dataframe['LEGATOcaldate'])
+    dataframe['CODAcaldate'] = convert_date(dataframe['CODAcaldate'])
     dataframe['Minifluocaldate'] = convert_date(dataframe['Minifluocaldate'])
     # specify format for some columns
     dataframe = dataframe.astype(dict(ArgosTagPTT=str))
