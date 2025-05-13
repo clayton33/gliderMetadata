@@ -64,6 +64,9 @@ q.instrument_vocabulary = 'https://vocab.nerc.ac.uk/collection/L22/current/TOOL1
 q.save()
 ## FLBBCDEXP
 q = models.InstrumentModel.objects.get(instrument_model='FLBBCDEXP')
+q.instrument_model = 'WET Labs ECO FLBBCD'
+q.instrument_longname = 'WET Labs {Sea-Bird WETLabs} ECO FLBBCD scattering fluorescence sensor'
+q.instrument_vocabulary = 'https://vocab.nerc.ac.uk/collection/L22/current/TOOL1141/'
 ## 43F
 q = models.InstrumentModel.objects.get(instrument_model = '43F')
 q.instrument_model = 'SBE 43F DO'
