@@ -28,6 +28,8 @@ def readMissionFile():
     # Clean up and remove unnecessary rows
     # 1. Remove rows where 'annualMissionIndex' is NaN
     dataframe = dataframe.dropna(subset=['annualMissionIndex'])
+    ## remove empty Deploymentdata as well
+    dataframe = dataframe.dropna(subset=['Deploymentdate'])
     # Covert dates to something useful
     dataframe['Deploymentdate'] = convert_date(dataframe['Deploymentdate'])
     dataframe['Recoverydate'] = convert_date(dataframe['Recoverydate'])

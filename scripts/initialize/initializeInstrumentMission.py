@@ -71,6 +71,8 @@ for d in df.itertuples():
         # convert serial number to string to match with database
         if isinstance(serialNumber, float):
             serialNumber = str(int(serialNumber))
+        if isinstance(serialNumber, int):
+            serialNumber = str(serialNumber)
         # if GPCTD, add '0' in front of number
         if i == 'GPCTD':
             serialNumber = '0' + serialNumber

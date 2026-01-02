@@ -2,9 +2,9 @@ import io
 import pandas as pd
 from gliderMetadataApp import models
 
-data = {'instrument_model' :['RBR Legato3', 'RBR Legato3', 'RBR Legato3', 'RBR Legato3', 'RBR Coda T.ODO', 'RBR Coda T.ODO'],
-        'instrument_originalPlatform' : [None, None, None, None, None, None],
-        'instrument_serialNumber' : ['"205045"', '"210185"', '"212531"', '"214386"', '"212279"', '"212973"']}
+data = {'instrument_model' :['RBR Legato3', 'RBR Legato3', 'RBR Legato3', 'RBR Legato3', 'RBR Coda T.ODO', 'RBR Coda T.ODO', 'RBR Legato3', 'RBR Coda T.ODO', 'RBR Legato3', 'RBR Coda T.ODO'],
+        'instrument_originalPlatform' : [None, None, None, None, None, None, None, None, None, None],
+        'instrument_serialNumber' : ['"205045"', '"210185"', '"212531"', '"214386"', '"212279"', '"212973"', '"214389"', '"212970"', '"212536"', '"211391"']}
 df = pd.DataFrame(data)
 for row in df.itertuples():
     print(f"Getting {getattr(row, 'instrument_serialNumber')} for instrument_model {getattr(row, 'instrument_model')}")

@@ -24,6 +24,7 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                            interpolate=True,
                            add_keep_variables=True,
                            subset_navigationVariables=True,
+                           usePygliderDeadReckoning=False,
                            filename="deployment.yml"):
     """
     :param platform_company: a string indicating the name of the company associated with the
@@ -38,6 +39,8 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
            it will see which instruments are on the glider, and pull one from each.
     :param subset_navigationVariables: a boolean value indicating if a subset of the ancillary navigation variables
            should only be included in the output. These variables include pitch, roll, and heading. Default is True.
+    :param usePygliderDeadReckoning: a boolean value indicating to include required parameters if omitting
+           dead reckoned positions in pyglider, default is False.
     :param filename: a string indicating the filename for the yml file that is output
     :return:
     """
@@ -134,62 +137,7 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
     netcdfVariablesDict['interpolate'] = interpolate  # boolean values will appear as true/false, so not capitalized
     # 5. Get variable information based on the platform
     ipQ = models.PlatformVariable.objects.filter(platform_variablePlatformCompany=pcQ.first().pk)
-    # select platform variables are used as the axis variables
-    # make a separate dict for those
-    # identify them based on platform company
-    # in the future I might have to treat them even more special than what is done below
-    if (pcQ.first().platform_company == 'Alseamar'):
-        coordinateSourceVariables = ['Timestamp',
-                                     'NAV_LONGITUDE',
-                                     'NAV_LATITUDE']
-        coordinateAxisVariables = ['T',
-                                   'X',
-                                   'Y']
-        coordinatedf = pd.DataFrame(list(zip(coordinateSourceVariables,
-                                             coordinateAxisVariables)),
-                                    columns=['sourceVariable',
-                                             'axisVariable'])
-        for row in coordinatedf.itertuples():
-            ipcvQ = models.PlatformVariable.objects.get(platform_variablePlatformCompany=pcQ.first().pk,
-                                                        platform_variableSourceName=getattr(row, 'sourceVariable'))
-            # special treatment for time, i'll have to think about this
-            # this is an OK hack for now, i'm not really sure if the units are correct though
-            if getattr(row, 'sourceVariable') == 'Timestamp':
-                long_name = 'Time'
-                standard_name = 'time'
-                units = 'seconds since 1970-01-01T00:00:00Z'
-                vocabulary = ''
-                unitsvocabulary = ''
-            else:
-                long_name = ipcvQ.platform_nercVariable.variable_nerc_variableLongName
-                standard_name = ipcvQ.platform_cfVariable.variable_standardName
-                vocabulary = ipcvQ.platform_nercVariable.variable_nerc_variableVocabulary
-                units = ipcvQ.platform_nercVariable.variable_nerc_unit
-                unitsvocabulary =ipcvQ.platform_nercVariable.variable_nerc_unitVocabulary
-            netcdfVariablesDict[standard_name] = dict(
-                source=ipcvQ.platform_variableSourceName,
-                axis=getattr(row, 'axisVariable'),
-                long_name=long_name,
-                standard_name=standard_name,
-                vocabulary=vocabulary,
-                units=units,
-                unitsVocabulary=unitsvocabulary,
-                observation_type='measured' # everything that is output by the glider is considered measured
-            )
-            if getattr(row, 'sourceVariable') in ['NAV_LATITUDE', 'NAV_LONGITUDE']:
-                netcdfVariablesDict[standard_name].update(
-                    conversion='nmea2deg', # required for SX
-                    reference='WGS84',
-                    coordinate_reference_frame='urn: ogc:crs: EPSG::4326'
-                )
-            # add valid_[max,min] for latitude and longitude
-            if getattr(row, 'sourceVariable') in ['NAV_LONGITUDE']:
-                netcdfVariablesDict[standard_name].update(valid_max="180.00",
-                                                          valid_min="-180.00")
-            if getattr(row, 'sourceVariable') in ['NAV_LATITUDE']:
-                netcdfVariablesDict[standard_name].update(valid_max="90.00",
-                                                          valid_min="-90.00")
-    skipVars = ['NAV_MISSIONID', 'NAV_NUMBEROFYO', 'PLD_REALTIMECLOCK', 'Temperature']
+    # Check deadReckoning
     # some variables did not exist for certain navigation firmware versions
     navFirmware = mQ.first().mission_platformNavFirmware.platform_navFirmwareVersion
     print(f"{navFirmware}")
@@ -215,10 +163,77 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
             skipDeadReck = True
             break  # once a number is less than deadReckoning, exit
 
+    # select platform variables are used as the axis variables
+    # make a separate dict for those
+    # identify them based on platform company
+    # in the future I might have to treat them even more special than what is done below
+    if (pcQ.first().platform_company == 'Alseamar'):
+        coordinateSourceVariables = ['Timestamp']
+        # add X and Y depending on deadReckoning
+        if not(skipDeadReck):
+            if usePygliderDeadReckoning:
+                coordinateSourceVariables.append('Lon')
+                coordinateSourceVariables.append('Lat')
+            else:
+                coordinateSourceVariables.append('NAV_LONGITUDE')
+                coordinateSourceVariables.append('NAV_LATITUDE')
+        else:
+            coordinateSourceVariables.append('NAV_LONGITUDE')
+            coordinateSourceVariables.append('NAV_LATITUDE')
+        coordinateAxisVariables = ['T',
+                                   'X',
+                                   'Y']
+        coordinatedf = pd.DataFrame(list(zip(coordinateSourceVariables,
+                                             coordinateAxisVariables)),
+                                    columns=['sourceVariable',
+                                             'axisVariable'])
+        for row in coordinatedf.itertuples():
+            ipcvQ = models.PlatformVariable.objects.get(platform_variablePlatformCompany=pcQ.first().pk,
+                                                        platform_variableSourceName=getattr(row, 'sourceVariable'))
+            # special treatment for time, i'll have to think about this
+            # this is an OK hack for now, i'm not really sure if the units are correct though
+            if getattr(row, 'sourceVariable') == 'Timestamp':
+                long_name = 'Time'
+                standard_name = 'time'
+                units = 'seconds since 1970-01-01T00:00:00Z'
+                vocabulary = ''
+                unitsvocabulary = ''
+            else:
+                long_name = ipcvQ.platform_nercVariable.variable_nerc_variableLongName if ipcvQ.platform_nercVariable != None else ""
+                standard_name = ipcvQ.platform_cfVariable.variable_standardName if ipcvQ.platform_nercVariable != None else ""
+                vocabulary = ipcvQ.platform_nercVariable.variable_nerc_variableVocabulary if ipcvQ.platform_nercVariable != None else ""
+                units = ipcvQ.platform_nercVariable.variable_nerc_unit if ipcvQ.platform_nercVariable != None else "None"
+                unitsvocabulary =ipcvQ.platform_nercVariable.variable_nerc_unitVocabulary if ipcvQ.platform_nercVariable != None else ""
+            netcdfVariablesDict[standard_name] = dict(
+                source=ipcvQ.platform_variableSourceName,
+                axis=getattr(row, 'axisVariable'),
+                long_name=long_name,
+                standard_name=standard_name,
+                vocabulary=vocabulary,
+                units=units,
+                unitsVocabulary=unitsvocabulary,
+                observation_type='measured' # everything that is output by the glider is considered measured
+            )
+            if getattr(row, 'sourceVariable') in ['NAV_LATITUDE', 'NAV_LONGITUDE', 'Lat', 'Lon']:
+                netcdfVariablesDict[standard_name].update(
+                    conversion='nmea2deg', # required for SX
+                    reference='WGS84',
+                    coordinate_reference_frame='urn: ogc:crs: EPSG::4326'
+                )
+            # add valid_[max,min] for latitude and longitude
+            if getattr(row, 'sourceVariable') in ['NAV_LONGITUDE', 'Lon']:
+                netcdfVariablesDict[standard_name].update(valid_max="180.00",
+                                                          valid_min="-180.00")
+            if getattr(row, 'sourceVariable') in ['NAV_LATITUDE', 'Lat']:
+                netcdfVariablesDict[standard_name].update(valid_max="90.00",
+                                                          valid_min="-90.00")
+    skipVars = ['NAV_MISSIONID', 'NAV_NUMBEROFYO', 'PLD_REALTIMECLOCK', 'Temperature']
     if skipDeadReck:
         print(f"skipping DeadReckoning")
         skipVars.append('DeadReckoning')
-    keepNavVars = ['Pitch', 'Roll', 'Heading'] # fragile ?
+    keepNavVars = ['Pitch', 'Roll', 'Heading', 'NavState'] # fragile ?
+    if not(skipDeadReck):
+        keepNavVars.append('DeadReckoning') # add it for checking changes made to pyglider on 20250522
     # pull out one variable from each instrument (and a nav variable) for keepVariables
     keepVariables = []
     for platformVariable in ipQ.iterator():
@@ -248,7 +263,7 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
         # minimum case
         if platformVariable.platform_nercVariable is None and platformVariable.platform_cfVariable is None:
             platformVariableDictName = platformVariable.platform_variableSourceName
-            units = platformVariable.platform_variableSourceUnits
+            units = platformVariable.platform_variableSourceUnits if platformVariable.platform_variableSourceUnits != None else ""
         elif not(platformVariable.platform_nercVariable is None) and platformVariable.platform_cfVariable is None:
             platformVariableDictName = platformVariable.platform_nercVariable.variable_nerc_variableName
             long_name = platformVariable.platform_nercVariable.variable_nerc_variableLongName
@@ -306,6 +321,9 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
         i = instrument.instrument_calibration  # this is just to make the below a bit easier
         # gliderDeviceName (this is the type)
         gliderDeviceDictName = re.sub("\\s", "", i.instrument_calibrationSerial.instrument_serialNumberModel.instrument_modelType.instrument_type)
+        ## CTD has to be lowercase for pyglider check and remove all capital letters
+        if gliderDeviceDictName in ['CTD']:
+            gliderDeviceDictName = gliderDeviceDictName.lower()
         # if there are more than 1 type of instrument, add number to the dict name
         n = None
         if gliderDeviceDictName in list(gliderDeviceDict.keys()):
@@ -421,7 +439,7 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
             # minimum case
             if instrumentVariable.instrument_nercVariable is None and instrumentVariable.instrument_cfVariable is None:
                 instrumentVariableDictName = instrumentVariable.instrument_variableSourceName
-                units = instrumentVariable.instrument_variableSourceUnits
+                units = instrumentVariable.instrument_variableSourceUnits if instrumentVariable.instrument_variableSourceUnits != None else ""
             elif not(instrumentVariable.instrument_nercVariable is None) and instrumentVariable.instrument_cfVariable is None:
                 instrumentVariableDictName = instrumentVariable.instrument_nercVariable.variable_nerc_variableName
                 long_name = instrumentVariable.instrument_nercVariable.variable_nerc_variableLongName
