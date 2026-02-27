@@ -38,7 +38,7 @@ for row in df.itertuples():
     # define contributingInstitution, contributingInstitutionVocabulary, contributingInstitutionRole,
     #   contributingInstitutionRoleVocabulary
     # halifax line (HL) and bonavista (BBL)
-    if getattr(row, 'Missiontype') in ['HL', 'BBL']:
+    if getattr(row, 'Missiontype') in ['HL', 'BB']:
         network = 'OceanGliders > BOON > Northwest Atlantic Ocean > Atlantic Zone Monitoring Program'
     else:
         network = 'OceanGliders > BOON > Northwest Atlantic Ocean'
