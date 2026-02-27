@@ -42,4 +42,9 @@ def readMissionFile():
     dataframe['Minifluocaldate'] = convert_date(dataframe['Minifluocaldate'])
     # specify format for some columns
     dataframe = dataframe.astype(dict(ArgosTagPTT=str))
+    dataframe = dataframe.astype(dict(Ecopuckwarmup=float))
+    dataframe = dataframe.astype(dict(GPCTDwarmup=float))
+    dataframe = dataframe.astype(dict(Rinkowarmup=float))
+    dataframe = dataframe.astype(dict(LEGATOwarmup=float))
+    dataframe = dataframe.astype(dict(Minifluowarmup=float))
     return dataframe
