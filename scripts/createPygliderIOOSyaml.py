@@ -193,11 +193,11 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
             # special treatment for time, i'll have to think about this
             # this is an OK hack for now, i'm not really sure if the units are correct though
             if getattr(row, 'sourceVariable') == 'Timestamp':
-                long_name = 'Time'
+                long_name = 'Time elapsed since 1970-01-01T00:00:00Z.'
                 standard_name = 'time'
-                units = 'seconds since 1970-01-01T00:00:00Z'
-                vocabulary = ''
-                unitsvocabulary = ''
+                units = 'seconds'
+                vocabulary = 'http://vocab.nerc.ac.uk/collection/OG1/current/TIME/'
+                unitsvocabulary = 'http://vocab.nerc.ac.uk/collection/P06/current/UTBB/'
             else:
                 long_name = ipcvQ.platform_nercVariable.variable_nerc_variableLongName if ipcvQ.platform_nercVariable != None else ""
                 standard_name = ipcvQ.platform_cfVariable.variable_standardName if ipcvQ.platform_nercVariable != None else ""
@@ -332,7 +332,9 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
             n = nreps
             # add number to the device name
             gliderDeviceDictName = gliderDeviceDictName + str((nreps + 1))
-        profileVariablesDictName = 'instrument_' + gliderDeviceDictName
+        gliderDeviceDictName = 'instrument_' + gliderDeviceDictName
+        #profileVariablesDictName = 'instrument_' + gliderDeviceDictName
+        profileVariablesDictName = gliderDeviceDictName
         # make
         make = i.instrument_calibrationSerial.instrument_serialNumberModel.instrument_modelMake.instrument_make
         makeVocabulary = i.instrument_calibrationSerial.instrument_serialNumberModel.instrument_modelMake.instrument_vocabulary
@@ -586,7 +588,7 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
     #       netcdf_variables
     #       profile_variables
     metadataDict = dict(acknowledgement='Funding from Fisheries and Oceans Canada.',
-                        comment=' ',
+                        comment=mQ.first().mission_comments,
                         contributor_name=', '.join(allContributorNames),
                         contributor_role=', '.join(allContributorRoles),
                         contributor_role_vocabulary=', '.join(allContributorVocabulary),
@@ -608,9 +610,9 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                         deployment_vessel=mQ.first().mission_deploymentVessel.vessel_name if mQ.first().mission_deploymentVessel != None else "",
                         recovery_vessel=mQ.first().mission_recoveryVessel.vessel_name if mQ.first().mission_recoveryVessel != None else "",
                         featureType='trajectory',  # fixed value
-                        format_version='IOOS_Glider_NetCDF_v2.0.nc', # fixed value
+                        format_version='', # fixed value
                         glider_name=psQ.first().platform_name, # pyglider
-                        glider_serial=psQ.first().platform_serial.replace('"', ''), # pyglider
+                        glider_serial='SEA' + psQ.first().platform_serial.replace('"', ''), # pyglider
                         glider_model=pcQ.first().platform_model, # pyglider
                         glider_instrument_name=pcQ.first().platform_model,  # pyglider
                         glider_wmo=psQ.first().platform_wmo, # pyglider
@@ -619,9 +621,10 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                         platform_model=pcQ.first().platform_model,
                         wmo_identifier=psQ.first().platform_wmo, # OG1
                         wmo_id=psQ.first().platform_wmo,  # IOOS
+                        ices_code=psQ.first().platform_ices, #OGI + CIOOS
                         institution='Bedford Institute of Oceanography',
                         institution_vocabulary='https://edmo.seadatanet.org/report/1811',
-                        internal_mission_identifier=mQ.first().mission_cruiseNumber,
+                        internal_mission_identifier=re.sub(r'(\w+)_(\w+)_(\d+)', r'\1\2M\3', mQ.first().mission_cruiseNumber).replace('GLI', 'GLD'),
                         keywords=', '.join(sorted(gcmdKeywords)),
                         keywords_vocabulary='GCMD Science Keywords',
                         license='Open Government Licence - Canada',
@@ -634,7 +637,7 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                         platform_type=pcQ.first().platform_model + ' Glider',
                         processing_level='',
                         project='Atlantic Zone Monitoring Program',
-                        project_url='',
+                        project_url='https://www.dfo-mpo.gc.ca/science/data-donnees/azmp-pmza/index-eng.html',
                         publisher_email='BIO.Datashop@dfo-mpo.gc.ca',
                         publisher_name='Bedford Institute of Oceanography',
                         publisher_url='https://www.bio.gc.ca/index-en.php',

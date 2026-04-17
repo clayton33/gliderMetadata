@@ -238,9 +238,9 @@ for row in df.itertuples():
         im = models.Mission(mission_platformName=models.PlatformName.objects.get(pk=getattr(row, 'platformNamePk')),
                             mission_number=getattr(row, 'missionNumber'),
                             mission_cruiseNumber=getattr(row, 'CruiseName'), # check
-                            mission_platformNavFirmware=None if pd.isna(getattr(row, 'platformNavigationFirmwarePk')) else models.PlatformNavigationFirmware.objects.get(pk=getattr(row, 'platformNavigationFirmwarePk')),
-                            mission_platformBattery=models.PlatformBattery.objects.get(pk=getattr(row, 'platformBatteryPk')),
-                            mission_platformRelease=models.PlatformRelease.objects.get(pk=getattr(row, 'platformReleasePk')),
+                            mission_platformNavFirmware= models.PlatformNavigationFirmware.objects.get(pk=getattr(row, 'platformNavigationFirmwarePk')),
+                            mission_platformBattery=None if pd.isna(getattr(row, 'platformBatteryPk')) else models.PlatformBattery.objects.get(pk=getattr(row, 'platformBatteryPk')),
+                            mission_platformRelease=None if pd.isna(getattr(row, 'platformReleasePk')) else models.PlatformRelease.objects.get(pk=getattr(row, 'platformReleasePk')),
                             mission_platformPayload=models.PlatformPayload.objects.get(pk=getattr(row, 'platformPayloadPk')),
                             mission_platformPayloadFirmware=None if pd.isna(getattr(row, 'platformPayloadFirmwarePk')) else models.PlatformPayloadFirmware.objects.get(pk=getattr(row, 'platformPayloadFirmwarePk')),
                             mission_deploymentDate=getattr(row, 'Deploymentdate'),
@@ -268,7 +268,7 @@ for row in df.itertuples():
                             mission_ballastedDensity=None if pd.isna(getattr(row, 'Ballasteddensity')) else getattr(row, 'Ballasteddensity'),
                             mission_argosTag=models.ArgosTagSerialNumber.objects.get(pk=getattr(row, 'argosTagPk')),
                             mission_institute=None,
-                            mission_comments=getattr(row, 'Comments'))
+                            mission_comments=getattr(row, 'Commentfordatafile'))
         im.save()
     else :
         print(f"There is already a mission for glider {getattr(row, 'Glider')} mission {getattr(row, 'missionNumber')}, "

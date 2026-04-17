@@ -41,8 +41,8 @@ for row in df.itertuples():
                        'understand the causes of oceanic variability at various time scales, provide ' \
                        'multidisciplinary datasets to establish relationships among variables, ' \
                        'and provide adequate data to support the development of ocean activities. ' \
-                       'Ocean gliders were acquired by Fisheries and Oceans Canada in year 2017 ' \
-                       'and 2018 for both the West and East coast. On the East coast, they have been used ' \
+                       'Ocean gliders were first acquired by Fisheries and Oceans Canada in year 2017 ' \
+                       'and 2018 for both the West and East coasts. On the East coast, they have been used ' \
                        'to monitor hydrographic sections associated with the AZMP. Here, the AZMP Halifax line ' \
                        'is occupied from outside the mouth of Halifax harbor, Nova Scotia Canada at (44.267N, 63.317W)' \
                        ' in the off-shelf direction approximately 135 nautical miles to deep waters off the continental' \

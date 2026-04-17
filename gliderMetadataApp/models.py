@@ -15,6 +15,7 @@ class PlatformName(models.Model):
     platform_serial = models.CharField(max_length=6, null=True)
     platform_name = models.CharField(max_length=20, null=True)
     platform_wmo = models.IntegerField(null=True)
+    platform_ices = models.CharField(max_length=4, null=True)
 
 
 class PlatformMaintenance(models.Model):
