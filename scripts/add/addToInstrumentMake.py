@@ -2,8 +2,14 @@ import io
 import pandas as pd
 from gliderMetadataApp import models
 # added 20250509
-data = {'instrument_make' : ['RBR'],
-        'instrument_vocabulary' : ['https://vocab.nerc.ac.uk/collection/L35/current/MAN0049/']}
+data = {'instrument_make' : ['RBR',
+                             'Nortek',
+                             'Rockland Scientific',
+                             'Pro Oceanus'],
+        'instrument_vocabulary' : ['https://vocab.nerc.ac.uk/collection/L35/current/MAN0049/',
+                                   'https://vocab.nerc.ac.uk/collection/L35/current/MAN0068/',
+                                   'https://vocab.nerc.ac.uk/collection/L35/current/MAN0022/',
+                                   'https://vocab.nerc.ac.uk/collection/L35/current/MAN0033/']}
 df = pd.DataFrame(data)
 for row in df.itertuples():
     print(f"Getting {getattr(row, 'instrument_make')} with vocabulary {getattr(row, 'instrument_vocabulary')}")

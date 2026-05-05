@@ -2,9 +2,35 @@ import io
 import pandas as pd
 from gliderMetadataApp import models
 
-data = {'instrument_model' :['RBR Legato3', 'RBR Legato3', 'RBR Legato3', 'RBR Legato3', 'RBR Coda T.ODO', 'RBR Coda T.ODO', 'RBR Legato3', 'RBR Coda T.ODO', 'RBR Legato3', 'RBR Coda T.ODO'],
-        'instrument_originalPlatform' : [None, None, None, None, None, None, None, None, None, None],
-        'instrument_serialNumber' : ['"205045"', '"210185"', '"212531"', '"214386"', '"212279"', '"212973"', '"214389"', '"212970"', '"212536"', '"211391"']}
+data = {'instrument_model' :['RBR Legato3', 'RBR Legato3', 'RBR Legato3', 'RBR Legato3',
+                             'RBR Coda T.ODO', 'RBR Coda T.ODO',
+                             'RBR Legato3',
+                             'RBR Coda T.ODO',
+                             'RBR Legato3',
+                             'RBR Coda T.ODO',
+                             'RBR tridente', 'RBR tridente', 'RBR tridente',
+                             'Pro-Oceanus Mini pCO2', 'Pro-Oceanus Mini pCO2',
+                             'Nortek Glider1000 AD2CP'
+                             ],
+        'instrument_originalPlatform' : [None, None, None, None,
+                                         None, None,
+                                         None,
+                                         None,
+                                         None,
+                                         None,
+                                         None, None, None,
+                                         None, None,
+                                         None],
+        'instrument_serialNumber' : ['"205045"', '"210185"', '"212531"', '"214386"',
+                                     '"212279"', '"212973"',
+                                     '"214389"',
+                                     '"212970"',
+                                     '"212536"',
+                                     '"211391"',
+                                     '"239559"', '"240453"', '"241970"',
+                                     '"45-624-18"', '"45-623-18"',
+                                     '"107453"'
+                                     ]}
 df = pd.DataFrame(data)
 for row in df.itertuples():
     print(f"Getting {getattr(row, 'instrument_serialNumber')} for instrument_model {getattr(row, 'instrument_model')}")

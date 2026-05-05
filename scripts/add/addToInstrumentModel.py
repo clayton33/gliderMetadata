@@ -2,11 +2,36 @@ import io
 import pandas as pd
 from gliderMetadataApp import models
 
-data = {'instrument_make' : ['RBR', 'RBR'],
-        'instrument_type' : ['CTD', 'dissolved gas sensors'],
-        'instrument_model' : ['RBR Legato3', 'RBR Coda T.ODO'],
-        'instrument_longname' : ['RBR Legato3 CTD', 'RBR Coda T.ODO Temperature and Dissolved Oxygen Sensor'],
-        'instrument_vocabulary' : ['https://vocab.nerc.ac.uk/collection/L22/current/TOOL1745/', 'https://vocab.nerc.ac.uk/collection/L22/current/TOOL1717/']}
+data = {'instrument_make' : ['RBR',
+                             'RBR',
+                             'RBR',
+                             'Pro Oceanus',
+                             'Rockland Scientific',
+                             'Nortek'],
+        'instrument_type' : ['CTD',
+                             'dissolved gas sensors',
+                             'optical backscatter sensors',
+                             'dissolved gas sensors',
+                             'microstructure sensors',
+                             'current profilers'],
+        'instrument_model' : ['RBR Legato3',
+                              'RBR Coda T.ODO',
+                              'RBR tridente',
+                              'Pro-Oceanus Mini pCO2',
+                              'Rockland MicroRider-1000G',
+                              'Nortek Glider1000 AD2CP'],
+        'instrument_longname' : ['RBR Legato3 CTD',
+                                 'RBR Coda T.ODO Temperature and Dissolved Oxygen Sensor',
+                                 'RBR tridente scattering fluorescence sensor',
+                                 'Pro-Oceanus Mini CO2 submersible pCO2 analyser',
+                                 'Rockland Scientific MicroRider-1000G turbulence microstructure profiler',
+                                 'Nortek Glider1000 AD2CP Acoustic Doppler Current Profiler'],
+        'instrument_vocabulary' : ['https://vocab.nerc.ac.uk/collection/L22/current/TOOL1745/',
+                                   'https://vocab.nerc.ac.uk/collection/L22/current/TOOL1717/',
+                                   'https://vocab.nerc.ac.uk/collection/L22/current/TOOL2149/',
+                                   'https://vocab.nerc.ac.uk/collection/L22/current/TOOL1319/',
+                                   'https://vocab.nerc.ac.uk/collection/L22/current/TOOL2265/',
+                                   'https://vocab.nerc.ac.uk/collection/L22/current/TOOL1774/']}
 df = pd.DataFrame(data)
 for row in df.itertuples():
     print(f"Getting {getattr(row, 'instrument_model')} with vocabulary {getattr(row, 'instrument_vocabulary')}")
