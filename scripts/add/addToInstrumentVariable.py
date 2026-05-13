@@ -5,19 +5,32 @@ from scripts.createPygliderIOOSyaml import platform_company, platform_model
 
 # InstrumentVariable needs A LOT of info
 # see example 'data' below for addition of new variables
-data = {'instrument_variablePlatformCompany':['Alseamar', 'Alseamar', 'Alseamar'],
-        'instrument_variablePlatformModel':['SeaExplorer', 'SeaExplorer', 'SeaExplorer'],
-        'instrument_variableInstrumentModel':['RBR Coda T.ODO', 'RBR Coda T.ODO', 'RBR Coda T.ODO'],
-        'instrument_nercVariable':[None, 'DOXY', 'TEMP_DOXY'],
-        'instrument_cfVariable':[None, 'mole_concentration_of_dissolved_molecular_oxygen_in_sea_water', 'temperature_of_sensor_for_oxygen_in_sea_water'],
-        'instrument_variableSourceName':['LEGATO_CODA_CORR_PHASE', 'LEGATO_CODA_DO', 'LEGATO_CODA_TEMPERATURE'],
-        'instrument_variableSourceUnits':['', 'umol l-1', 'Celsius'],
-        'instrument_gcmdKeyword':[None, 'Earth Science > Oceans > Ocean Chemistry > Dissolved Gases', None],
-        'instrument_accuracy':[None, None, None],
-        'instrument_precision':[None, None, None],
-        'instrument_resolution':[None, None, None],
-        'instrument_validMin':[None, None, None],
-        'instrument_validMax':[None, None, None]}
+data = {'instrument_variablePlatformCompany':['Alseamar', 'Alseamar', 'Alseamar',
+                                              'Alseamar', 'Alseamar', 'Alseamar'],
+        'instrument_variablePlatformModel':['SeaExplorer', 'SeaExplorer', 'SeaExplorer',
+                                            'SeaExplorer', 'SeaExplorer', 'SeaExplorer'],
+        'instrument_variableInstrumentModel':['RBR Coda T.ODO', 'RBR Coda T.ODO', 'RBR Coda T.ODO',
+                                              'RBR tridente', 'RBR tridente', 'RBR tridente'],
+        'instrument_nercVariable':[None, 'DOXY', 'TEMP_DOXY',
+                                   'BBP700', 'CHLA', 'CDOM'],
+        'instrument_cfVariable':[None, 'mole_concentration_of_dissolved_molecular_oxygen_in_sea_water', 'temperature_of_sensor_for_oxygen_in_sea_water',
+                                 None, 'concentration_of_chlorophyll_in_sea_water', None],
+        'instrument_variableSourceName':['LEGATO_CODA_CORR_PHASE', 'LEGATO_CODA_DO', 'LEGATO_CODA_TEMPERATURE',
+                                         'TRIDENTE_BACKSCATTER', 'TRIDENTE_CHLOROPHYLL', 'TRIDENTE_FDOM'],
+        'instrument_variableSourceUnits':['', 'umol l-1', 'Celsius',
+                                          'm-1 sr-1', 'ug l-l', 'ug -l'],
+        'instrument_gcmdKeyword':[None, 'Earth Science > Oceans > Ocean Chemistry > Dissolved Gases', None,
+                                  None, 'Earth Science > Oceans > Ocean Chemistry > Chlorophyll', None],
+        'instrument_accuracy':[None, None, None,
+                               None, None, None],
+        'instrument_precision':[None, None, None,
+                                None, None, None],
+        'instrument_resolution':[None, None, None,
+                                 None, None, None],
+        'instrument_validMin':[None, None, None,
+                               0, 0, None],
+        'instrument_validMax':[None, None, None,
+                               1.5, 500, None]}
 df = pd.DataFrame(data)
 for row in df.itertuples():
         print(f"Getting {getattr(row, 'instrument_variableSourceName')} for a {getattr(row, 'instrument_variablePlatformModel')} "
