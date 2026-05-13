@@ -646,7 +646,8 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
                         source='Observational data from a profiling glider.',
                         standard_name_vocabulary='Standard Name Table (v85, 21 May 2024)',
                         summary=mQ.first().mission_summary,
-                        transmission_system=''
+                        transmission_system='',
+                        location=mQ.first().mission_location
                         )
     # for now i'm going to skip 'glider_devices', I think it's a C-PROOF thing
     # the information there will be summarized in the
