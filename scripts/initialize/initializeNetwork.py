@@ -37,8 +37,8 @@ for row in df.itertuples():
     im = models.Mission.objects.get(pk=missionQ.pk) # not sure if this is redundant
     # define contributingInstitution, contributingInstitutionVocabulary, contributingInstitutionRole,
     #   contributingInstitutionRoleVocabulary
-    # halifax line (HL) and bonavista (BBL)
-    if getattr(row, 'Missiontype') in ['HL', 'BB']:
+    # halifax line (HL) and bonavista (BB)
+    if getattr(row, 'Missiontype') in ['HL', 'BB', 'HL part', 'Trinity']:
         network = 'OceanGliders > BOON > Northwest Atlantic Ocean > Atlantic Zone Monitoring Program'
     else:
         network = 'OceanGliders > BOON > Northwest Atlantic Ocean'
