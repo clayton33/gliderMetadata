@@ -36,7 +36,7 @@ for row in df.itertuples():
                                              mission_number=getattr(row, 'missionNumber')).first()
         # define institution and role
         # halifax line (HL) and passive acoustic monitoring in emerald basin (PAM EB)
-    if getattr(row, 'Missiontype') in ['HL', 'PAM EB', 'Overnight']:
+    if getattr(row, 'Missiontype') in ['HL', 'PAM EB', 'Overnight', 'HL part']:
         cim=[['Bedford Institute of Oceanography', 'Operator'],
             ['Bedford Institute of Oceanography', 'PI']]
     # bonavista (BBL)
