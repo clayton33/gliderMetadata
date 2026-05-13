@@ -43,9 +43,9 @@ for row in df.itertuples():
                          'and provide adequate data to support the development of ocean activities. ' \
                          'Ocean gliders were first acquired by Fisheries and Oceans Canada in year 2017 ' \
                          'and 2018 for both the West and East coasts. On the East coast, they have been used ' \
-                         'to monitor hydrographic sections associated with the AZMP. Here, the AZMP Bonavista Bay' \
-                         'transect is occupied from outside the mouth of Bonavista Bay, Newfoundland Canada at' \
-                         '(48.733N, 52.967W) in the off-shelf direction approximately 150 nautical miles to' \
+                         'to monitor hydrographic sections associated with the AZMP. Here, the AZMP Bonavista Bay ' \
+                         'transect is occupied from outside the mouth of Bonavista Bay, Newfoundland Canada at ' \
+                         '(48.733N, 52.967W) in the off-shelf direction approximately 150 nautical miles to the ' \
                          'continental slope at (49.85N, 49.5W).'
     im.save()
 
