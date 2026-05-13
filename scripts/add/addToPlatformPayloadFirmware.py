@@ -2,8 +2,8 @@ import io
 import pandas as pd
 from gliderMetadataApp import models
 
-data = {'platformPayloadFirmware':['2.24.2-r', '2.25.1-r'],
-        'platformPayloadFirmwareComments':['', '']}
+data = {'platformPayloadFirmware':['2.24.2-r', '2.25.1-r', '2.25.2-r'],
+        'platformPayloadFirmwareComments':['', '', '']}
 df = pd.DataFrame(data)
 # file = io.FileIO(file=r".\initializationData\platform\platformPayloadFirmware02.csv", mode="r")
 # df = pd.read_csv(file)
