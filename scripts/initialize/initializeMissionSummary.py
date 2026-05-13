@@ -11,7 +11,7 @@ def convert_date(date):
 df = rmf.readMissionFile()
 
 # Right now we're just doing the 'HL' missions, so subset df to those missions
-df = df[df['Missiontype'] == 'HL']
+df = df[(df['Missiontype'] == 'HL') | (df['Missiontype'] == 'HL part')]
 
 # get pk value of the platform to find mission pk
 # mission_platformName
