@@ -324,6 +324,7 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
         ## CTD has to be lowercase for pyglider check and remove all capital letters
         if gliderDeviceDictName in ['CTD']:
             gliderDeviceDictName = gliderDeviceDictName.lower()
+        gliderDeviceDictName = 'instrument_' + gliderDeviceDictName
         # if there are more than 1 type of instrument, add number to the dict name
         n = None
         if gliderDeviceDictName in list(gliderDeviceDict.keys()):
@@ -332,7 +333,6 @@ def createPygliderIOOSyaml(platform_company, platform_model, platform_serial,
             n = nreps
             # add number to the device name
             gliderDeviceDictName = gliderDeviceDictName + str((nreps + 1))
-        gliderDeviceDictName = 'instrument_' + gliderDeviceDictName
         #profileVariablesDictName = 'instrument_' + gliderDeviceDictName
         profileVariablesDictName = gliderDeviceDictName
         # make
